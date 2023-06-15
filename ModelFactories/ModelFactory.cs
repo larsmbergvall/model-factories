@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using System.Reflection;
 using Bogus;
 
 namespace ModelFactories;
@@ -102,6 +103,32 @@ public abstract class ModelFactory<T> : Faker<T> where T : class
         params (Expression<Func<T, TProperty>>, Func<Faker, TProperty>)[] attributes)
     {
         return CreateMany(count, attributes);
+    }
+
+    #endregion
+
+    #region Relations
+    // public virtual ModelFactory<T> BelongsTo<TRelatedFactory, TRelated, TProperty>(
+    //     Expression<Func<T, TProperty>> property)
+    //     where TRelatedFactory : ModelFactory<TRelated>, new()
+    //     where TRelated : class
+    // {
+    //     // if (property.Body is MemberExpression memberExpression)
+    //     // {
+    //     //     var propertyInfo = (PropertyInfo)memberExpression.Member;
+    //     //     var relatedFactory = new TRelatedFactory();
+    //     //     propertyInfo.SetValue(this, relatedFactory);
+    //     // }
+    //
+    //     return this;
+    // }
+
+    public virtual ModelFactory<T> BelongsTo<TRelated, TRelatedFactory, TProperty>(
+        Expression<Func<T, TProperty>> property)
+        where TRelatedFactory : ModelFactory<TRelated>, new()
+        where TRelated : class
+    {
+        return this;
     }
 
     #endregion
