@@ -99,4 +99,23 @@ public class ModelFactoryTest
         post.Title.Should().Be("Test");
         post.Body.Should().Be("Test");
     }
+
+    [Fact]
+    public void ItCreatesRelatedModelsUsingFactory()
+    {
+        var post = new PostFactory().WithAuthor().Create();
+
+        post.Author.Should().NotBeNull();
+        post.Author.Should().BeOfType(typeof(Author));
+    }
+
+    [Fact]
+    public void ItCreatesRelatedModelsUsingFactoryWithState()
+    {
+        var post = new PostFactory().WithAuthorWithTestName().Create();
+
+        post.Author.Should().NotBeNull();
+        post.Author.Should().BeOfType(typeof(Author));
+        post.Author!.Name.Should().Be("Test Name");
+    }
 }
