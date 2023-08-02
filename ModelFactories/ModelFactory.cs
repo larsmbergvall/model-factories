@@ -33,6 +33,39 @@ public abstract class ModelFactory<T> : Faker<T> where T : class
         return this;
     }
 
+    /// <summary>
+    /// Create a nested/related model using a factory
+    /// </summary>
+    /// <param name="property">Property to set, i.e. post => post.Author</param>
+    /// <typeparam name="TRelated">Related type, i.e. Author</typeparam>
+    /// <typeparam name="TFactory">Related type factory, i.e. AuthorFactory</typeparam>
+    /// <returns></returns>
+    protected ModelFactory<T> With<TRelated, TFactory>(Expression<Func<T, object?>> property)
+        where TRelated: class
+        where TFactory: ModelFactory<TRelated>, new()
+    {
+        var factory = new TFactory();
+
+        RuleFor(property, _ => factory.Create());
+
+        return this;
+    }
+    protected ModelFactory<T> With<TRelated, TFactory>(
+        Expression<Func<T, object?>> property,
+        params (Expression<Func<TRelated, object?>>, Func<Faker, object?>)[] attributes
+        )
+        where TRelated: class
+        where TFactory: ModelFactory<TRelated>, new()
+    {
+        var factory = new TFactory();
+
+        factory.State(attributes);
+
+        RuleFor(property, _ => factory.Create());
+
+        return this;
+    }
+
     private void EnsureConfigured()
     {
         if (!_isConfigured)

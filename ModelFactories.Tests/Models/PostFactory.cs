@@ -3,6 +3,16 @@ namespace ModelFactories.Tests.Models;
 
 public class PostFactory : ModelFactory<Post>
 {
+    public PostFactory WithAuthor()
+    {
+        return (PostFactory) With<Author, AuthorFactory>(x => x.Author);
+    }
+
+    public PostFactory WithAuthorWithTestName()
+    {
+        return (PostFactory)With<Author, AuthorFactory>(x => x.Author, (a => a.Name, _ => "Test Name"));
+    }
+
     public PostFactory WithTestTitle()
     {
         return (PostFactory)State(
