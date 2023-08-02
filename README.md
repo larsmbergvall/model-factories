@@ -81,3 +81,24 @@ var post = new PostFactory()
     .WithTitle("Foo")
     .Create();
 ```
+
+### Related/Nested models and factories
+
+It is possible to use factories to generate dependencies for a model as well. For instance, a Post might have an Author.
+In this case you can tell the ModelFactory to use the Author factory when creating that resource:
+
+```csharp
+protected override void Definition()
+{
+    // Other calls to RuleFor, etc.
+
+    // The generic types specify which model and factory to use
+    // the function parameters specify which property on this factory model to use.
+    With<Author, AuthorFactory>(post => post.Author);
+    
+    // Of course, you can also override state on the nested factory as well:
+    With<Author, AuthorFactory>(post => post.Author, (author => author.Name, f => "Test Name"));
+    // In that example, we specify that the generated Author should be given the name "Test Name", but you can also
+    // use the 'f' parameter to utilize Faker
+}
+```
