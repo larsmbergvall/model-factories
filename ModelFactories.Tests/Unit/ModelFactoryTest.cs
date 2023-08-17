@@ -1,7 +1,7 @@
 using ModelFactories.Tests.Models;
 using FluentAssertions;
 
-namespace ModelFactories.Tests.Factories;
+namespace ModelFactories.Tests.Unit;
 
 public class ModelFactoryTest
 {
