@@ -21,7 +21,7 @@ public class ModelFactoryTests
     public void ItCanCreateManyModels()
     {
         var models = new AuthorFactory()
-            .CreateMany(2);
+            .Create(2);
 
         models.Should().BeOfType<List<Author>>();
         models.Should().HaveCount(2);

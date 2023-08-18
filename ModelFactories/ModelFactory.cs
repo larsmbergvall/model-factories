@@ -38,6 +38,11 @@ public abstract class ModelFactory<T> where T : class, new()
         return GetModel();
     }
 
+    public List<T> Create(uint count)
+    {
+        return CreateMany(count);
+    }
+
     public List<T> CreateMany(uint count = 1)
     {
         var list = new List<T>();
