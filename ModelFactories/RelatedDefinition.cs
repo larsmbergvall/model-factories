@@ -9,7 +9,7 @@ public interface IRelatedDefinition
 }
 
 public class RelatedDefinition<TModel, TFactory> : IRelatedDefinition where TModel : class, new()
-    where TFactory : NewModelFactory<TModel>, new()
+    where TFactory : ModelFactory<TModel>, new()
 {
     public RelatedDefinition(string propertyName, Func<TFactory, TModel>? callback = null)
     {

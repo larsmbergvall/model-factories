@@ -5,14 +5,14 @@ using ModelFactories.Tests.Models;
 
 namespace ModelFactories.Tests.Unit;
 
-public class NewModelFactoryTest
+public class ModelFactoryTests
 {
     #region State
 
     [Fact]
     public void ItCanCreateModel()
     {
-        var model = new NewAuthorFactory().Create();
+        var model = new AuthorFactory().Create();
 
         model.Name.Should().Be("foo");
     }
@@ -20,7 +20,7 @@ public class NewModelFactoryTest
     [Fact]
     public void ItCanCreateManyModels()
     {
-        var models = new NewAuthorFactory()
+        var models = new AuthorFactory()
             .CreateMany(2);
 
         models.Should().BeOfType<List<Author>>();
@@ -30,7 +30,7 @@ public class NewModelFactoryTest
     [Fact]
     public void ItUsesStateWhenCreatingMany()
     {
-        var models = new NewPostFactory()
+        var models = new PostFactory()
             .Published()
             .WithFooTitle()
             .CreateMany(2);
@@ -47,7 +47,7 @@ public class NewModelFactoryTest
     [Fact]
     public void ItCanOverwriteProp()
     {
-        var model = new NewAuthorFactory()
+        var model = new AuthorFactory()
             .Property(a => a.Name, () => "bar")
             .Create();
 
@@ -59,7 +59,7 @@ public class NewModelFactoryTest
     {
         Guid id = Guid.NewGuid();
 
-        var model = new NewAuthorFactory()
+        var model = new AuthorFactory()
             .Property(a => a.Id, () => id)
             .Property(a => a.Name, () => "baz")
             .Create();
@@ -71,7 +71,7 @@ public class NewModelFactoryTest
     [Fact]
     public void ItCanOverwritePropertyUsingModel()
     {
-        var model = new NewAuthorFactory()
+        var model = new AuthorFactory()
             .Property(a => a.Name, (model) => model.Name + "bar")
             .Create();
 
@@ -83,7 +83,7 @@ public class NewModelFactoryTest
     {
         Assert.Throws<PropIsReadOnlyException>(() =>
         {
-            new NewAuthorFactory()
+            new AuthorFactory()
                 .Property(a => a.NotWritable, () => "foo")
                 .Create();
         });
@@ -92,7 +92,7 @@ public class NewModelFactoryTest
     [Fact]
     public void ItCanUsePredefinedState()
     {
-        var model = new NewPostFactory().Published().Create();
+        var model = new PostFactory().Published().Create();
 
         model.PublishedFrom.Should().NotBeNull();
     }
@@ -100,7 +100,7 @@ public class NewModelFactoryTest
     [Fact]
     public void ItCanCombineStateWithOverrides()
     {
-        var model = new NewPostFactory()
+        var model = new PostFactory()
             .Published()
             .Property(p => p.Title, () => "::title::")
             .Create();
@@ -112,7 +112,7 @@ public class NewModelFactoryTest
     [Fact]
     public void ItCanCombineMultipleStates()
     {
-        var model = new NewPostFactory()
+        var model = new PostFactory()
             .Published()
             .WithFooTitle()
             .Create();
@@ -128,8 +128,8 @@ public class NewModelFactoryTest
     [Fact]
     public void ItCreatesRelatedModelsUsingFactory()
     {
-        var post = new NewPostFactory()
-            .With<Author, NewAuthorFactory>(p => p.Author)
+        var post = new PostFactory()
+            .With<Author, AuthorFactory>(p => p.Author)
             .Create();
 
         post.Author.Should().NotBeNull();
@@ -139,8 +139,8 @@ public class NewModelFactoryTest
     [Fact]
     public void ItCreatesRelatedModelsUsingFactoryWithState()
     {
-        var post = new NewPostFactory()
-            .With<Author, NewAuthorFactory>(
+        var post = new PostFactory()
+            .With<Author, AuthorFactory>(
                 p => p.Author,
                 f => f.Property(a => a.Name, () => "::author name::")
                     .Create())
@@ -154,8 +154,8 @@ public class NewModelFactoryTest
     [Fact]
     public void ItCreatesRelatedModelsForAllWhenCreatingMany()
     {
-        var posts = new NewPostFactory()
-            .With<Author, NewAuthorFactory>(
+        var posts = new PostFactory()
+            .With<Author, AuthorFactory>(
                 p => p.Author,
                 f => f.Property(a => a.Name, () => "::author name::")
                     .Create())

@@ -2,7 +2,7 @@ using ModelFactories.Tests.Models;
 
 namespace ModelFactories.Tests.Factories;
 
-public class NewAuthorFactory : NewModelFactory<Author>
+public class AuthorFactory : ModelFactory<Author>
 {
     protected override void Definition()
     {

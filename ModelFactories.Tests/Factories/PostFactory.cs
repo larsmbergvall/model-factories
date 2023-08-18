@@ -2,7 +2,7 @@ using ModelFactories.Tests.Models;
 
 namespace ModelFactories.Tests.Factories;
 
-public class NewPostFactory : NewModelFactory<Post>
+public class PostFactory : ModelFactory<Post>
 {
     protected override void Definition()
     {
@@ -12,14 +12,14 @@ public class NewPostFactory : NewModelFactory<Post>
             .Property(p => p.CreatedAt, () => DateTime.Now);
     }
 
-    public NewPostFactory Published()
+    public PostFactory Published()
     {
         Property(p => p.PublishedFrom, () => DateTime.Now);
 
         return this;
     }
 
-    public NewPostFactory WithFooTitle()
+    public PostFactory WithFooTitle()
     {
         Property(p => p.Title, () => "foo");
 
