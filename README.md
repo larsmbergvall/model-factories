@@ -5,6 +5,12 @@ Laravel [Model Factories](https://laravel.com/docs/eloquent-factories)
 
 This package is still in early development, so expect bugs and breaking changes :)
 
+## Installing
+
+```
+dotnet add package ModelFactories --version 0.1.1
+```
+
 ## Usage
 
 To use Model Factories, you create a class for your factory, i.e. `PostFactory.cs`
