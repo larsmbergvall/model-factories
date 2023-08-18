@@ -11,9 +11,6 @@
         <AssemblyVersion>0.1.0</AssemblyVersion>
     </PropertyGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Bogus" Version="34.0.2" />
-    </ItemGroup>
 
 
 </Project>
