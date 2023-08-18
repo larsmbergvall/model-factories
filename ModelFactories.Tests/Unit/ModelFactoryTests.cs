@@ -21,7 +21,7 @@ public class ModelFactoryTests
     public void ItCanCreateManyModels()
     {
         var models = new AuthorFactory()
-            .CreateMany(2);
+            .Create(2);
 
         models.Should().BeOfType<List<Author>>();
         models.Should().HaveCount(2);
@@ -119,6 +119,16 @@ public class ModelFactoryTests
 
         model.PublishedFrom.Should().NotBeNull();
         model.Title.Should().Be("foo");
+    }
+
+    [Fact]
+    public void ItCanCreateModelWithRawValue()
+    {
+        var model = new PostFactory()
+            .Property(p => p.Title, "::title::")
+            .Create();
+
+        model.Title.Should().Be("::title::");
     }
 
     #endregion

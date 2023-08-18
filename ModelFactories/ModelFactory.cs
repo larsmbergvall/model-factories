@@ -38,6 +38,11 @@ public abstract class ModelFactory<T> where T : class, new()
         return GetModel();
     }
 
+    public List<T> Create(uint count)
+    {
+        return CreateMany(count);
+    }
+
     public List<T> CreateMany(uint count = 1)
     {
         var list = new List<T>();
@@ -68,6 +73,17 @@ public abstract class ModelFactory<T> where T : class, new()
     {
         var propertyName = PropertyName(propertyExpression);
         _definitionsWithModel.Add(new PropertyDefinitionWithModel<T, TProperty>(propertyName, callback));
+
+        return this;
+    }
+
+    public ModelFactory<T> Property<TProperty>(
+        Expression<Func<T, TProperty>> propertyExpression,
+        TProperty value
+    )
+    {
+        var propertyName = PropertyName(propertyExpression);
+        _definitions.Add(new PropertyDefinition<TProperty>(propertyName, () => value));
 
         return this;
     }
