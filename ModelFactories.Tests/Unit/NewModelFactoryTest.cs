@@ -10,11 +10,38 @@ public class NewModelFactoryTest
     #region State
 
     [Fact]
-    public void ItWorks()
+    public void ItCanCreateModel()
     {
         var model = new NewAuthorFactory().Create();
 
         model.Name.Should().Be("foo");
+    }
+
+    [Fact]
+    public void ItCanCreateManyModels()
+    {
+        var models = new NewAuthorFactory()
+            .CreateMany(2);
+
+        models.Should().BeOfType<List<Author>>();
+        models.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void ItUsesStateWhenCreatingMany()
+    {
+        var models = new NewPostFactory()
+            .Published()
+            .WithFooTitle()
+            .CreateMany(2);
+
+        models.Should().BeOfType<List<Post>>();
+        models.Should().HaveCount(2);
+        models.ForEach(p =>
+        {
+            p.Title.Should().Be("foo");
+            p.PublishedFrom.Should().NotBeNull();
+        });
     }
 
     [Fact]
@@ -122,6 +149,27 @@ public class NewModelFactoryTest
         post.Author.Should().NotBeNull();
         post.Author.Should().BeOfType(typeof(Author));
         post.Author!.Name.Should().Be("::author name::");
+    }
+
+    [Fact]
+    public void ItCreatesRelatedModelsForAllWhenCreatingMany()
+    {
+        var posts = new NewPostFactory()
+            .With<Author, NewAuthorFactory>(
+                p => p.Author,
+                f => f.Property(a => a.Name, () => "::author name::")
+                    .Create())
+            .CreateMany(2);
+
+        posts.Should().BeOfType<List<Post>>();
+        posts.Should().HaveCount(2);
+
+        posts.ForEach(post =>
+        {
+            post.Author.Should().NotBeNull();
+            post.Author.Should().BeOfType(typeof(Author));
+            post.Author!.Name.Should().Be("::author name::");
+        });
     }
 
     #endregion
