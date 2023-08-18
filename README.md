@@ -100,3 +100,31 @@ Of course, this can also be called on a specific factory instance:
         .With<Author, AuthorFactory>()
         .Create();
 ```
+
+## Combining with Bogus/Faker
+
+If you want to use Bogus for generating data, you can create an extension for ModelFactory in your project:
+```csharp
+public static class ModelFactoryExtensions
+{
+    public static Faker CreateFaker<T>(this ModelFactory<T> modelFactory)
+        where T : class, new()
+    {
+        return new Faker("en");
+    }
+}
+```
+
+With this extension in place you can call CreateFaker in your factories:
+
+```csharp
+public class PostFactory : ModelFactory<Post>
+{
+    protected override void Definition()
+    {
+        var faker = this.CreateFaker();
+
+        Property(p => p.Id, () => faker.Random.Guid());
+    }
+}
+```
