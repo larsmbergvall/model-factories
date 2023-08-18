@@ -17,6 +17,8 @@ public class PostFactory : ModelFactory<Post>
         Property(p => p.Id, () => Guid.NewGuid())
             .Property(p => p.Title, () => "Post title")
             .Property(p => p.Body, () => "Lorem ipsum")
+            // You can also use raw values instead of callbacks:
+            //.Property(p => p.Title, "Hardcoded title")
             .Property(p => p.CreatedAt, () => DateTime.Now);
     }
 }

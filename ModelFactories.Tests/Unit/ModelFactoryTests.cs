@@ -121,6 +121,16 @@ public class ModelFactoryTests
         model.Title.Should().Be("foo");
     }
 
+    [Fact]
+    public void ItCanCreateModelWithRawValue()
+    {
+        var model = new PostFactory()
+            .Property(p => p.Title, "::title::")
+            .Create();
+
+        model.Title.Should().Be("::title::");
+    }
+
     #endregion
 
     #region Related Factories

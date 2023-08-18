@@ -77,6 +77,17 @@ public abstract class ModelFactory<T> where T : class, new()
         return this;
     }
 
+    public ModelFactory<T> Property<TProperty>(
+        Expression<Func<T, TProperty>> propertyExpression,
+        TProperty value
+    )
+    {
+        var propertyName = PropertyName(propertyExpression);
+        _definitions.Add(new PropertyDefinition<TProperty>(propertyName, () => value));
+
+        return this;
+    }
+
     public ModelFactory<T> With<TRelated, TFactory>(Expression<Func<T, TRelated?>> property)
         where TRelated : class, new()
         where TFactory : ModelFactory<TRelated>, new()
