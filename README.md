@@ -3,7 +3,7 @@
 Very simple package for creating class based model factories. Inspired by
 Laravel [Model Factories](https://laravel.com/docs/eloquent-factories)
 
-It uses the [Bogus library](https://github.com/bchavez/Bogus) under the hood.
+This package is still in early development, so expect bugs and breaking changes :)
 
 ## Usage
 
@@ -14,15 +14,10 @@ public class PostFactory : ModelFactory<Post>
 {
     protected override void Definition()
     {
-        RuleFor(x => x.Id, f => f.Random.Guid());
-        RuleFor(x => x.Title, f => string.Join(' ', f.Lorem.Words(5)));
-        RuleFor(x => x.Body, f => string.Join('\n', f.Lorem.Paragraphs(
-            f.Random.UShort(3, 10))
-        ));
-        RuleFor(
-            x => x.PublishedFrom,
-            f => f.Date.Between(DateTime.Today.AddYears(-2), DateTime.Today)
-        );
+        Property(p => p.Id, () => Guid.NewGuid())
+            .Property(p => p.Title, () => "Post title")
+            .Property(p => p.Body, () => "Lorem ipsum")
+            .Property(p => p.CreatedAt, () => DateTime.Now);
     }
 }
 ```
@@ -34,25 +29,19 @@ Then you can simply create Post objects by using:
 Post post = new PostFactory().Create();
 
 // Create many posts
-List<Post> posts = new PostFactory().Create(2);
+List<Post> posts = new PostFactory().CreateMany(2);
 ```
 
 ### Overriding attributes when creating
 
-When creating, if you want a specific property value on your generated object(s),
-you can send them as method arguments using the same signature as Bogus' `RuleFor` as Tuples:
+When creating, if you want to override a specific property value on your generated object(s),
+you can just call the `Property()` method on the factory:
 
 ```csharp
-// One
-Post post = new PostFactory().Create(
-    (p => p.Title, f => "New title"),
-    (p => p.Body, f => "New Body"),
-);
-
-// Many; all created posts will have null as their PublishedFrom value
-List<Post> posts = new PostFactory().Create(2,
-    (p => p.PublishedFrom, f => null)
-);
+Post post = new PostFactory()
+    .Property(p => p.Title, () => "New title")
+    .Property(p => p.UpdatedAt, (model) => model.CreatedAt)
+    .Create();
 ```
 
 ### Factory states
@@ -60,45 +49,82 @@ List<Post> posts = new PostFactory().Create(2,
 You might want to reuse the code for creating posts with PublishedFrom = null, without having to type that again. This
 is where factory states come into play.
 
-In the model factory, you can define a custom method for any state you want. This is basically the same as overriding an
-attribute when creating:
+In the model factory, you can define a custom method for any state you want.
 
 ```csharp
 public PostFactory Draft()
 {
-    return (PostFactory) State(
-        (x => x.PublishedFrom, f => null)
-    );
+    Property(p => p.PublishedFrom, () => null);
+
+    return this;
 }
 ```
 
-You can send multiple attribute overrides to the State method. You can also combine multiple states when creating your
-models:
+You can then use your states like this:
 
 ```csharp
 var post = new PostFactory()
     .Draft()
+    // You can also combine multiple states
     .WithTitle("Foo")
     .Create();
 ```
 
 ### Related/Nested models and factories
 
-It is possible to use factories to generate dependencies for a model as well. For instance, a Post might have an Author.
+It is possible to use factories to generate related models for a model as well. For instance, a Post might have an Author.
 In this case you can tell the ModelFactory to use the Author factory when creating that resource:
 
 ```csharp
 protected override void Definition()
 {
-    // Other calls to RuleFor, etc.
+    // Other calls to Property, etc.
 
     // The generic types specify which model and factory to use
     // the function parameters specify which property on this factory model to use.
     With<Author, AuthorFactory>(post => post.Author);
     
-    // Of course, you can also override state on the nested factory as well:
-    With<Author, AuthorFactory>(post => post.Author, (author => author.Name, f => "Test Name"));
-    // In that example, we specify that the generated Author should be given the name "Test Name", but you can also
-    // use the 'f' parameter to utilize Faker
+    // You can also send a callback to modify the related factory. The callback must return the created model(s)
+    With<Author, AuthorFactory>(p => p.Author, (authorFactory) => {
+        return authorFactory
+            .Property(author => author.Name, () => "Foo")
+            .Create();
+    });
+}
+```
+
+Of course, this can also be called on a specific factory instance:
+
+```csharp
+    var post = new PostFactory()
+        .With<Author, AuthorFactory>()
+        .Create();
+```
+
+## Combining with Bogus/Faker
+
+If you want to use Bogus for generating data, you can create an extension for ModelFactory in your project:
+```csharp
+public static class ModelFactoryExtensions
+{
+    public static Faker CreateFaker<T>(this ModelFactory<T> modelFactory)
+        where T : class, new()
+    {
+        return new Faker("en");
+    }
+}
+```
+
+With this extension in place you can call CreateFaker in your factories:
+
+```csharp
+public class PostFactory : ModelFactory<Post>
+{
+    protected override void Definition()
+    {
+        var faker = this.CreateFaker();
+
+        Property(p => p.Id, () => faker.Random.Guid());
+    }
 }
 ```

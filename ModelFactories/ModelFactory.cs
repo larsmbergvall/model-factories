@@ -1,141 +1,181 @@
 using System.Linq.Expressions;
-using Bogus;
+using System.Reflection;
+using ModelFactories.Exceptions;
 
 namespace ModelFactories;
 
-public abstract class ModelFactory<T> : Faker<T> where T : class
+public abstract class ModelFactory<T> where T : class, new()
 {
-    private int _count = 1;
-    private bool _isConfigured = false;
+    private List<IPropertyDefinition> _definitions = new();
+    private List<IPropertyDefinition> _definitionsWithModel = new();
+    private T? _model = null;
+    private List<IRelatedDefinition> _relatedFactories = new();
 
     public ModelFactory()
     {
-        EnsureConfigured();
+        Configure();
     }
 
     protected abstract void Definition();
 
-    public ModelFactory<T> Count(int count)
-    {
-        _count = count;
-
-        return this;
-    }
-
-    protected ModelFactory<T> State<TProperty>(
-        params (Expression<Func<T, TProperty>>, Func<Faker, TProperty>)[] attributes)
-    {
-        foreach (var (property, setter) in attributes)
-        {
-            RuleFor(property, setter);
-        }
-
-        return this;
-    }
-
-    /// <summary>
-    /// Create a nested/related model using a factory
-    /// </summary>
-    /// <param name="property">Property to set, i.e. post => post.Author</param>
-    /// <typeparam name="TRelated">Related type, i.e. Author</typeparam>
-    /// <typeparam name="TFactory">Related type factory, i.e. AuthorFactory</typeparam>
-    /// <returns></returns>
-    protected ModelFactory<T> With<TRelated, TFactory>(Expression<Func<T, object?>> property)
-        where TRelated: class
-        where TFactory: ModelFactory<TRelated>, new()
-    {
-        var factory = new TFactory();
-
-        RuleFor(property, _ => factory.Create());
-
-        return this;
-    }
-    protected ModelFactory<T> With<TRelated, TFactory>(
-        Expression<Func<T, object?>> property,
-        params (Expression<Func<TRelated, object?>>, Func<Faker, object?>)[] attributes
-        )
-        where TRelated: class
-        where TFactory: ModelFactory<TRelated>, new()
-    {
-        var factory = new TFactory();
-
-        factory.State(attributes);
-
-        RuleFor(property, _ => factory.Create());
-
-        return this;
-    }
-
-    private void EnsureConfigured()
-    {
-        if (!_isConfigured)
-        {
-            Definition();
-            _isConfigured = true;
-        }
-    }
-
-    # region Create Single
-
     public T Create()
     {
-        return Generate();
-    }
-
-    public T Create<TProperty>(
-        params (Expression<Func<T, TProperty>> property, Func<Faker, TProperty> setter)[] attributes)
-    {
-        foreach (var (property, setter) in attributes)
+        foreach (var prop in _definitions)
         {
-            RuleFor(property, setter);
+            ApplyProperty(prop);
         }
 
-        return Create();
-    }
-
-    #endregion
-
-    #region Create Many
-
-    public List<T> Create(int count)
-    {
-        _count = count;
-
-        return CreateMany();
-    }
-
-    public List<T> CreateMany()
-    {
-        var createdModels = new List<T>();
-
-        for (int i = 0; i < _count; i++)
+        foreach (var prop in _definitionsWithModel)
         {
-            createdModels.Add(Create());
+            ApplyProperty(prop, true);
         }
 
-        return createdModels;
-    }
-
-    public List<T> CreateMany<TProperty>(int count,
-        params (Expression<Func<T, TProperty>>, Func<Faker, TProperty>)[] attributes)
-    {
-        EnsureConfigured();
-        _count = count;
-
-        foreach (var (property, setter) in attributes)
+        foreach (var related in _relatedFactories)
         {
-            RuleFor(property, setter);
+            CreateRelated(related);
         }
 
-        return CreateMany();
+        return GetModel();
     }
 
-
-    public List<T> Create<TProperty>(int count,
-        params (Expression<Func<T, TProperty>>, Func<Faker, TProperty>)[] attributes)
+    public List<T> CreateMany(uint count = 1)
     {
-        return CreateMany(count, attributes);
+        var list = new List<T>();
+
+        for (int i = 0; i < count; i++)
+        {
+            list.Add(Create());
+        }
+
+        return list;
     }
 
-    #endregion
+    public ModelFactory<T> Property<TProperty>(
+        Expression<Func<T, TProperty>> propertyExpression,
+        Func<TProperty> callback
+    )
+    {
+        var propertyName = PropertyName(propertyExpression);
+        _definitions.Add(new PropertyDefinition<TProperty>(propertyName, callback));
+
+        return this;
+    }
+
+    public ModelFactory<T> Property<TProperty>(
+        Expression<Func<T, TProperty>> propertyExpression,
+        Func<T, TProperty> callback
+    )
+    {
+        var propertyName = PropertyName(propertyExpression);
+        _definitionsWithModel.Add(new PropertyDefinitionWithModel<T, TProperty>(propertyName, callback));
+
+        return this;
+    }
+
+    public ModelFactory<T> With<TRelated, TFactory>(Expression<Func<T, TRelated?>> property)
+        where TRelated : class, new()
+        where TFactory : ModelFactory<TRelated>, new()
+    {
+        _relatedFactories.Add(
+            new RelatedDefinition<TRelated, TFactory>(PropertyName(property))
+        );
+
+        return this;
+    }
+
+
+    public ModelFactory<T> With<TRelated, TFactory>(Expression<Func<T, TRelated?>> property,
+        Func<TFactory, TRelated> callback)
+        where TRelated : class, new()
+        where TFactory : ModelFactory<TRelated>, new()
+    {
+        _relatedFactories.Add(
+            new RelatedDefinition<TRelated, TFactory>(PropertyName(property), callback)
+        );
+
+        return this;
+    }
+
+
+    private T GetModel()
+    {
+        if (_model is null)
+        {
+            _model = new T();
+        }
+
+        return _model;
+    }
+
+    private void ApplyProperty(IPropertyDefinition propertyDefinition, bool withModel = false)
+    {
+        var model = GetModel();
+        var reflection = model.GetType();
+        var prop = reflection.GetProperty(propertyDefinition.PropertyName);
+
+        EnsurePropExistsAndIsWritable(propertyDefinition, prop, reflection);
+
+        if (withModel)
+        {
+            prop.SetValue(model, propertyDefinition.Callback.DynamicInvoke(model));
+            return;
+        }
+
+        prop.SetValue(model, propertyDefinition.Callback.DynamicInvoke());
+    }
+
+    private void CreateRelated(IRelatedDefinition relatedDefinition)
+    {
+        var model = GetModel();
+        var reflection = model.GetType();
+        var prop = reflection.GetProperty(relatedDefinition.PropertyName);
+
+        EnsurePropExistsAndIsWritable(relatedDefinition, prop, reflection);
+
+        prop!.SetValue(
+            model,
+            relatedDefinition.Callback.DynamicInvoke(relatedDefinition.CreateFactory.DynamicInvoke())
+        );
+    }
+
+    private void Configure()
+    {
+        Definition();
+    }
+
+    private static void EnsurePropExistsAndIsWritable(IPropertyDefinition definition, PropertyInfo? propInfo, Type type)
+    {
+        if (propInfo is null)
+        {
+            throw new ModelFactoryException($"Property {definition.PropertyName} does not exist on {type.FullName}");
+        }
+
+        if (!propInfo.CanWrite)
+        {
+            throw new PropIsReadOnlyException(definition, type);
+        }
+    }
+
+    private static void EnsurePropExistsAndIsWritable(IRelatedDefinition definition, PropertyInfo? propInfo, Type type)
+    {
+        if (propInfo is null)
+        {
+            throw new ModelFactoryException($"Property {definition.PropertyName} does not exist on {type.FullName}");
+        }
+
+        if (!propInfo.CanWrite)
+        {
+            throw new PropIsReadOnlyException(definition, type);
+        }
+    }
+
+    private static string PropertyName<TType, TReturn>(Expression<Func<TType, TReturn>> expression)
+    {
+        if (expression.Body is MemberExpression memberExpression)
+        {
+            return memberExpression.Member.Name;
+        }
+
+        throw new ModelFactoryException("Could not extract name from expression");
+    }
 }

@@ -6,12 +6,11 @@
 	<Nullable>enable</Nullable>
 
 	<PackageId>ModelFactories.Local</PackageId>
-	<Version>0.0.1</Version>
+        <Version>0.1.0</Version>
 	<Authors>Larsmbergvall</Authors>
+        <AssemblyVersion>0.1.0</AssemblyVersion>
     </PropertyGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Bogus" Version="34.0.2" />
-    </ItemGroup>
+
 
 </Project>
