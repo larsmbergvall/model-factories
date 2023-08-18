@@ -11,4 +11,18 @@ public class NewPostFactory : NewModelFactory<Post>
             .Property(p => p.Body, () => "Lorem ipsum")
             .Property(p => p.CreatedAt, () => DateTime.Now);
     }
+
+    public NewPostFactory Published()
+    {
+        Property(p => p.PublishedFrom, () => DateTime.Now);
+
+        return this;
+    }
+
+    public NewPostFactory WithFooTitle()
+    {
+        Property(p => p.Title, () => "foo");
+
+        return this;
+    }
 }

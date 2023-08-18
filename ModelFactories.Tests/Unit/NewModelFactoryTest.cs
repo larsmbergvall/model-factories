@@ -62,6 +62,38 @@ public class NewModelFactoryTest
         });
     }
 
+    [Fact]
+    public void ItCanUsePredefinedState()
+    {
+        var model = new NewPostFactory().Published().Create();
+
+        model.PublishedFrom.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ItCanCombineStateWithOverrides()
+    {
+        var model = new NewPostFactory()
+            .Published()
+            .Property(p => p.Title, () => "::title::")
+            .Create();
+
+        model.PublishedFrom.Should().NotBeNull();
+        model.Title.Should().Be("::title::");
+    }
+
+    [Fact]
+    public void ItCanCombineMultipleStates()
+    {
+        var model = new NewPostFactory()
+            .Published()
+            .WithFooTitle()
+            .Create();
+
+        model.PublishedFrom.Should().NotBeNull();
+        model.Title.Should().Be("foo");
+    }
+
     #endregion
 
     #region Related Factories

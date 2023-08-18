@@ -3,7 +3,7 @@
 Very simple package for creating class based model factories. Inspired by
 Laravel [Model Factories](https://laravel.com/docs/eloquent-factories)
 
-It uses the [Bogus library](https://github.com/bchavez/Bogus) under the hood.
+This package is still in very early development, so expect bugs and breaking changes :)
 
 ## Usage
 
@@ -14,15 +14,10 @@ public class PostFactory : ModelFactory<Post>
 {
     protected override void Definition()
     {
-        RuleFor(x => x.Id, f => f.Random.Guid());
-        RuleFor(x => x.Title, f => string.Join(' ', f.Lorem.Words(5)));
-        RuleFor(x => x.Body, f => string.Join('\n', f.Lorem.Paragraphs(
-            f.Random.UShort(3, 10))
-        ));
-        RuleFor(
-            x => x.PublishedFrom,
-            f => f.Date.Between(DateTime.Today.AddYears(-2), DateTime.Today)
-        );
+        Property(p => p.Id, () => Guid.NewGuid())
+            .Property(p => p.Title, () => "Post title")
+            .Property(p => p.Body, () => "Lorem ipsum")
+            .Property(p => p.CreatedAt, () => DateTime.Now);
     }
 }
 ```
@@ -39,20 +34,14 @@ List<Post> posts = new PostFactory().Create(2);
 
 ### Overriding attributes when creating
 
-When creating, if you want a specific property value on your generated object(s),
-you can send them as method arguments using the same signature as Bogus' `RuleFor` as Tuples:
+When creating, if you want to override a specific property value on your generated object(s),
+you can just call the `Property()` method on the factory:
 
 ```csharp
-// One
-Post post = new PostFactory().Create(
-    (p => p.Title, f => "New title"),
-    (p => p.Body, f => "New Body"),
-);
-
-// Many; all created posts will have null as their PublishedFrom value
-List<Post> posts = new PostFactory().Create(2,
-    (p => p.PublishedFrom, f => null)
-);
+Post post = new PostFactory()
+    .Property(p => p.Title, () => "New title")
+    .Property(p => p.UpdatedAt, (model) => model.CreatedAt)
+    .Create();
 ```
 
 ### Factory states
@@ -60,15 +49,14 @@ List<Post> posts = new PostFactory().Create(2,
 You might want to reuse the code for creating posts with PublishedFrom = null, without having to type that again. This
 is where factory states come into play.
 
-In the model factory, you can define a custom method for any state you want. This is basically the same as overriding an
-attribute when creating:
+In the model factory, you can define a custom method for any state you want.
 
 ```csharp
 public PostFactory Draft()
 {
-    return (PostFactory) State(
-        (x => x.PublishedFrom, f => null)
-    );
+    Property(p => p.PublishedFrom, () => null);
+
+    return this;
 }
 ```
 
