@@ -3,7 +3,7 @@
 Very simple package for creating class based model factories. Inspired by
 Laravel [Model Factories](https://laravel.com/docs/eloquent-factories)
 
-This package is still in very early development, so expect bugs and breaking changes :)
+This package is still in early development, so expect bugs and breaking changes :)
 
 ## Usage
 
@@ -29,7 +29,7 @@ Then you can simply create Post objects by using:
 Post post = new PostFactory().Create();
 
 // Create many posts
-List<Post> posts = new PostFactory().Create(2);
+List<Post> posts = new PostFactory().CreateMany(2);
 ```
 
 ### Overriding attributes when creating
@@ -60,33 +60,43 @@ public PostFactory Draft()
 }
 ```
 
-You can send multiple attribute overrides to the State method. You can also combine multiple states when creating your
-models:
+You can then use your states like this:
 
 ```csharp
 var post = new PostFactory()
     .Draft()
+    // You can also combine multiple states
     .WithTitle("Foo")
     .Create();
 ```
 
 ### Related/Nested models and factories
 
-It is possible to use factories to generate dependencies for a model as well. For instance, a Post might have an Author.
+It is possible to use factories to generate related models for a model as well. For instance, a Post might have an Author.
 In this case you can tell the ModelFactory to use the Author factory when creating that resource:
 
 ```csharp
 protected override void Definition()
 {
-    // Other calls to RuleFor, etc.
+    // Other calls to Property, etc.
 
     // The generic types specify which model and factory to use
     // the function parameters specify which property on this factory model to use.
     With<Author, AuthorFactory>(post => post.Author);
     
-    // Of course, you can also override state on the nested factory as well:
-    With<Author, AuthorFactory>(post => post.Author, (author => author.Name, f => "Test Name"));
-    // In that example, we specify that the generated Author should be given the name "Test Name", but you can also
-    // use the 'f' parameter to utilize Faker
+    // You can also send a callback to modify the related factory. The callback must return the created model(s)
+    With<Author, AuthorFactory>(p => p.Author, (authorFactory) => {
+        return authorFactory
+            .Property(author => author.Name, () => "Foo")
+            .Create();
+    });
 }
+```
+
+Of course, this can also be called on a specific factory instance:
+
+```csharp
+    var post = new PostFactory()
+        .With<Author, AuthorFactory>()
+        .Create();
 ```
