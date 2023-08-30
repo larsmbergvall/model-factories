@@ -109,6 +109,23 @@ Of course, this can also be called on a specific factory instance:
         .Create();
 ```
 
+### Hooks
+
+If you need to manipulate the created model after it was created, you can add
+any number of callbacks to be executed:
+
+```csharp
+var post = new PostFactory()
+	.AfterCreate(post =>
+		{
+			post.AuthorId = post.Author.Id;
+			return post;
+		})
+	.Create();
+```
+
+Of course, this can also be done inside your ModelFactory `Definition()` method.
+
 ## Combining with Bogus/Faker
 
 If you want to use Bogus for generating data, you can create an extension for ModelFactory in your project:
