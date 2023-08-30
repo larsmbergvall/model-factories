@@ -8,7 +8,7 @@ This package is still in early development, so expect bugs and breaking changes 
 ## Installing
 
 ```
-dotnet add package ModelFactories --version 0.1.1
+dotnet add package ModelFactories --version 0.2.1
 ```
 
 ## Usage
