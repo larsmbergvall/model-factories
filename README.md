@@ -8,7 +8,7 @@ This package is still in early development, so expect bugs and breaking changes 
 ## Installing
 
 ```
-dotnet add package ModelFactories --version 0.1.1
+dotnet add package ModelFactories --version 0.2.1
 ```
 
 ## Usage
@@ -108,6 +108,23 @@ Of course, this can also be called on a specific factory instance:
         .With<Author, AuthorFactory>()
         .Create();
 ```
+
+### Hooks
+
+If you need to manipulate the created model after it was created, you can add
+any number of callbacks to be executed:
+
+```csharp
+var post = new PostFactory()
+	.AfterCreate(post =>
+		{
+			post.AuthorId = post.Author.Id;
+			return post;
+		})
+	.Create();
+```
+
+Of course, this can also be done inside your ModelFactory `Definition()` method.
 
 ## Combining with Bogus/Faker
 
