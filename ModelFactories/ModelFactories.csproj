@@ -12,6 +12,8 @@
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/larsmbergvall/model-factories</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
