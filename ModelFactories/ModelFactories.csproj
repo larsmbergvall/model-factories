@@ -14,10 +14,15 @@
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/larsmbergvall/model-factories</RepositoryUrl>
+		
     </PropertyGroup>
 
     <ItemGroup>
         <None Include="../LICENSE" Pack="true" PackagePath=""/>
         <None Include="../README.md" Pack="true" PackagePath=""/>
+		  <None Update="ModelFactories.nuspec">
+			<Pack>true</Pack>
+			<PackagePath>$(OutputPath)</PackagePath>
+		</None>
     </ItemGroup>
 </Project>
