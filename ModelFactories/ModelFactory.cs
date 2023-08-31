@@ -9,7 +9,7 @@ public abstract class ModelFactory<T> where T : class, new()
 	private Dictionary<string, IPropertyDefinition> _definitions = new();
 	private Dictionary<string, IPropertyDefinition> _definitionsWithModel = new();
 	private T? _model = null;
-	private List<IRelatedDefinition> _relatedFactories = new();
+	private Dictionary<string, IRelatedDefinition> _relatedFactories = new();
 	private List<Func<T, T>> _afterCallbacks = new();
 
 	public ModelFactory()
@@ -31,7 +31,7 @@ public abstract class ModelFactory<T> where T : class, new()
 			ApplyProperty(prop, true);
 		}
 
-		foreach (var related in _relatedFactories)
+		foreach (var (key, related) in _relatedFactories)
 		{
 			CreateRelated(related);
 		}
@@ -96,8 +96,12 @@ public abstract class ModelFactory<T> where T : class, new()
 		where TRelated : class, new()
 		where TFactory : ModelFactory<TRelated>, new()
 	{
+		var propertyName = PropertyName(property);
+		RemovePropertyKeysIfExists(propertyName);
+
 		_relatedFactories.Add(
-			new RelatedDefinition<TRelated, TFactory>(PropertyName(property))
+			propertyName,
+			new RelatedDefinition<TRelated, TFactory>(propertyName)
 		);
 
 		return this;
@@ -108,8 +112,12 @@ public abstract class ModelFactory<T> where T : class, new()
 		where TRelated : class, new()
 		where TFactory : ModelFactory<TRelated>, new()
 	{
+		var propertyName = PropertyName(property);
+		RemovePropertyKeysIfExists(propertyName);
+
 		_relatedFactories.Add(
-			new RelatedDefinition<TRelated, TFactory>(PropertyName(property), callback)
+			propertyName,
+			new RelatedDefinition<TRelated, TFactory>(propertyName, callback)
 		);
 
 		return this;
@@ -188,6 +196,7 @@ public abstract class ModelFactory<T> where T : class, new()
 	{
 		_definitions.Remove(key);
 		_definitionsWithModel.Remove(key);
+		_relatedFactories.Remove(key);
 	}
 
 	private static void EnsurePropExistsAndIsWritable(IPropertyDefinition definition, PropertyInfo? propInfo, Type type)
