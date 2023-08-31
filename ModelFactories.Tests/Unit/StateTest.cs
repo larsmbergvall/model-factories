@@ -70,10 +70,10 @@ public class StateTest
 	public void ItCanOverwritePropertyUsingModel()
 	{
 		var model = new AuthorFactory()
-			.Property(a => a.Name, (model) => model.Name + "bar")
+			.Property(a => a.Name, (model) => model.Id.ToString())
 			.Create();
 
-		model.Name.Should().Be("foobar");
+		model.Name.Should().Be(model.Id.ToString());
 	}
 
 	[Fact]
@@ -127,5 +127,19 @@ public class StateTest
 			.Create();
 
 		model.Title.Should().Be("::title::");
+	}
+
+	[Fact]
+	public void ItCanOverrideDefinitionPropertiesWithModel()
+	{
+		// This tests a bug where if the Definition() method had a property which uses the created model,
+		// i.e. Property(p => p.PublishedFrom, model => model.CreatedAt),
+		// the Definition() one would be used even if overriding it with .Property outside
+
+		var comment = new CommentFactory()
+			.Property(c => c.UpdatedAt, () => null)
+			.Create();
+
+		comment.UpdatedAt.Should().BeNull();
 	}
 }

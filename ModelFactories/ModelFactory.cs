@@ -6,10 +6,10 @@ namespace ModelFactories;
 
 public abstract class ModelFactory<T> where T : class, new()
 {
-	private List<IPropertyDefinition> _definitions = new();
-	private List<IPropertyDefinition> _definitionsWithModel = new();
+	private Dictionary<string, IPropertyDefinition> _definitions = new();
+	private Dictionary<string, IPropertyDefinition> _definitionsWithModel = new();
 	private T? _model = null;
-	private List<IRelatedDefinition> _relatedFactories = new();
+	private Dictionary<string, IRelatedDefinition> _relatedFactories = new();
 	private List<Func<T, T>> _afterCallbacks = new();
 
 	public ModelFactory()
@@ -21,17 +21,17 @@ public abstract class ModelFactory<T> where T : class, new()
 
 	public T Create()
 	{
-		foreach (var prop in _definitions)
+		foreach (var (key, prop) in _definitions)
 		{
 			ApplyProperty(prop);
 		}
 
-		foreach (var prop in _definitionsWithModel)
+		foreach (var (key, prop) in _definitionsWithModel)
 		{
 			ApplyProperty(prop, true);
 		}
 
-		foreach (var related in _relatedFactories)
+		foreach (var (key, related) in _relatedFactories)
 		{
 			CreateRelated(related);
 		}
@@ -62,7 +62,8 @@ public abstract class ModelFactory<T> where T : class, new()
 	)
 	{
 		var propertyName = PropertyName(propertyExpression);
-		_definitions.Add(new PropertyDefinition<TProperty>(propertyName, callback));
+		RemovePropertyKeysIfExists(propertyName);
+		_definitions.Add(propertyName, new PropertyDefinition<TProperty>(propertyName, callback));
 
 		return this;
 	}
@@ -73,7 +74,8 @@ public abstract class ModelFactory<T> where T : class, new()
 	)
 	{
 		var propertyName = PropertyName(propertyExpression);
-		_definitionsWithModel.Add(new PropertyDefinitionWithModel<T, TProperty>(propertyName, callback));
+		RemovePropertyKeysIfExists(propertyName);
+		_definitionsWithModel.Add(propertyName, new PropertyDefinitionWithModel<T, TProperty>(propertyName, callback));
 
 		return this;
 	}
@@ -84,7 +86,8 @@ public abstract class ModelFactory<T> where T : class, new()
 	)
 	{
 		var propertyName = PropertyName(propertyExpression);
-		_definitions.Add(new PropertyDefinition<TProperty>(propertyName, () => value));
+		RemovePropertyKeysIfExists(propertyName);
+		_definitions.Add(propertyName, new PropertyDefinition<TProperty>(propertyName, () => value));
 
 		return this;
 	}
@@ -93,21 +96,28 @@ public abstract class ModelFactory<T> where T : class, new()
 		where TRelated : class, new()
 		where TFactory : ModelFactory<TRelated>, new()
 	{
+		var propertyName = PropertyName(property);
+		RemovePropertyKeysIfExists(propertyName);
+
 		_relatedFactories.Add(
-			new RelatedDefinition<TRelated, TFactory>(PropertyName(property))
+			propertyName,
+			new RelatedDefinition<TRelated, TFactory>(propertyName)
 		);
 
 		return this;
 	}
-
 
 	public ModelFactory<T> With<TRelated, TFactory>(Expression<Func<T, TRelated?>> property,
 		Func<TFactory, TRelated> callback)
 		where TRelated : class, new()
 		where TFactory : ModelFactory<TRelated>, new()
 	{
+		var propertyName = PropertyName(property);
+		RemovePropertyKeysIfExists(propertyName);
+
 		_relatedFactories.Add(
-			new RelatedDefinition<TRelated, TFactory>(PropertyName(property), callback)
+			propertyName,
+			new RelatedDefinition<TRelated, TFactory>(propertyName, callback)
 		);
 
 		return this;
@@ -151,11 +161,11 @@ public abstract class ModelFactory<T> where T : class, new()
 
 		if (withModel)
 		{
-			prop.SetValue(model, propertyDefinition.Callback.DynamicInvoke(model));
+			prop!.SetValue(model, propertyDefinition.Callback.DynamicInvoke(model));
 			return;
 		}
 
-		prop.SetValue(model, propertyDefinition.Callback.DynamicInvoke());
+		prop!.SetValue(model, propertyDefinition.Callback.DynamicInvoke());
 	}
 
 	private void CreateRelated(IRelatedDefinition relatedDefinition)
@@ -175,6 +185,18 @@ public abstract class ModelFactory<T> where T : class, new()
 	private void Configure()
 	{
 		Definition();
+	}
+
+	/// <summary>
+	/// Removes a key from both definition dictionaries. This is to ensure there is only ever one
+	/// definition for a given property
+	/// </summary>
+	/// <param name="key"></param>
+	private void RemovePropertyKeysIfExists(string key)
+	{
+		_definitions.Remove(key);
+		_definitionsWithModel.Remove(key);
+		_relatedFactories.Remove(key);
 	}
 
 	private static void EnsurePropExistsAndIsWritable(IPropertyDefinition definition, PropertyInfo? propInfo, Type type)

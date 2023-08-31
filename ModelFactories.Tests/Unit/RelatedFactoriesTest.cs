@@ -52,4 +52,14 @@ public class RelatedFactoriesTest
 			post.Author!.Name.Should().Be("::author name::");
 		});
 	}
+
+	[Fact]
+	public void ItCanOverrideRelatedWithProperty()
+	{
+		var post = new PostFactory()
+			.Property(a => a.Author, () => null)
+			.Create();
+
+		post.Author.Should().BeNull();
+	}
 }
