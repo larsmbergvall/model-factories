@@ -100,7 +100,6 @@ public abstract class ModelFactory<T> where T : class, new()
 		return this;
 	}
 
-
 	public ModelFactory<T> With<TRelated, TFactory>(Expression<Func<T, TRelated?>> property,
 		Func<TFactory, TRelated> callback)
 		where TRelated : class, new()
@@ -151,11 +150,11 @@ public abstract class ModelFactory<T> where T : class, new()
 
 		if (withModel)
 		{
-			prop.SetValue(model, propertyDefinition.Callback.DynamicInvoke(model));
+			prop!.SetValue(model, propertyDefinition.Callback.DynamicInvoke(model));
 			return;
 		}
 
-		prop.SetValue(model, propertyDefinition.Callback.DynamicInvoke());
+		prop!.SetValue(model, propertyDefinition.Callback.DynamicInvoke());
 	}
 
 	private void CreateRelated(IRelatedDefinition relatedDefinition)
