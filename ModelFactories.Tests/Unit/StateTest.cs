@@ -70,10 +70,10 @@ public class StateTest
 	public void ItCanOverwritePropertyUsingModel()
 	{
 		var model = new AuthorFactory()
-			.Property(a => a.Name, (model) => model.Name + "bar")
+			.Property(a => a.Name, (model) => model.Id.ToString())
 			.Create();
 
-		model.Name.Should().Be("foobar");
+		model.Name.Should().Be(model.Id.ToString());
 	}
 
 	[Fact]
