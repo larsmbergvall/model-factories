@@ -1,3 +1,8 @@
+# 0.2.3
+## Bugs
+Fixed a bug where using batch creation (Create(int) or CreateMany(int))
+didn't generate new values for each created model
+
 # 0.2.2
 ## Bugs
 Fixed a bug where calling .Property() sometimes would not override the property.
