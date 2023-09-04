@@ -6,15 +6,15 @@
         <Nullable>enable</Nullable>
 
         <PackageId>ModelFactories</PackageId>
-        <Version>0.2.2</Version>
+        <Version>0.2.3</Version>
         <Authors>Larsmbergvall</Authors>
-        <AssemblyVersion>0.2.2</AssemblyVersion>
+        <AssemblyVersion>0.2.3</AssemblyVersion>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/larsmbergvall/model-factories</RepositoryUrl>
-		
+
     </PropertyGroup>
 
     <ItemGroup>
