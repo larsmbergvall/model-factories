@@ -9,7 +9,6 @@ public abstract class ModelFactory<T> where T : class, new()
     private List<Func<T, T>> _afterCallbacks = new();
     private Dictionary<string, IPropertyDefinition> _definitions = new();
     private Dictionary<string, IPropertyDefinition> _definitionsWithModel = new();
-    private T? _model = null;
     private Dictionary<string, IRelatedDefinition> _relatedFactories = new();
 
     public ModelFactory()
