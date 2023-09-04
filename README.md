@@ -5,7 +5,7 @@ Laravel [Model Factories](https://laravel.com/docs/eloquent-factories)
 
 This package is still in early development, so expect bugs and breaking changes :)
 
-[Changelog](CHANGELOG.md)
+**[Changelog](https://github.com/larsmbergvall/model-factories/blob/main/CHANGELOG.md)**
 
 ## Installing
 
