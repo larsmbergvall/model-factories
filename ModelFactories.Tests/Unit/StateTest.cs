@@ -3,7 +3,7 @@ using ModelFactories.Exceptions;
 using ModelFactories.Tests.Factories;
 using ModelFactories.Tests.Models;
 
-namespace ModelFactories.Tests;
+namespace ModelFactories.Tests.Unit;
 
 public class StateTest
 {
