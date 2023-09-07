@@ -1,6 +1,9 @@
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using ModelFactories.Exceptions;
+
+[assembly: InternalsVisibleTo("ModelFactories.Tests")]
 
 namespace ModelFactories;
 

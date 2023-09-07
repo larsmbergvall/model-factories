@@ -128,6 +128,68 @@ var post = new PostFactory()
 
 Of course, this can also be done inside your ModelFactory `Definition()` method.
 
+### Factory Discovery
+
+Factory Discovery is a **completely optional feature**, which allows you to get a factory for a generic type, like this:
+
+```csharp
+var postFactory = FactoryMap.FactoryFor<Post>();
+```
+
+This might be useful in case you have a base class for your models, and want a handy static method for
+getting a factory for a given model. For example:
+
+```csharp
+var postFactory = Post.Factory();
+```
+
+One way of achieving this is by having the base model take a generic type of the model itself:
+
+```csharp
+// BaseModel.cs
+using ModelFactories;
+
+public abstract class BaseModel<T> where T: class, new()
+{
+    public static ModelFactory<T> Factory()
+    {
+        return FactoryMap.FactoryFor<T>();
+    }
+}
+
+// Post.cs
+public class Post : BaseModel<Post>
+{
+    // ...
+}
+```
+
+Of course, you could also have a non-generic BaseModel and simply return a `ModelFactory<BaseModel>`.
+
+**One limitation** of using factory discovery is that the returned type is `ModelFactory<T>`, which means
+that you don't have access to any custom states or methods defined in your factory, unless you cast it:
+
+```csharp
+var postFactory = (PostFactory) Post.Factory();
+```
+
+#### How are factories discovered?
+
+There are two ways of mapping types to factories: Automatic Discovery and manual mapping.
+
+Factories can be automatically discovered by calling:
+
+```csharp
+// Note: Assembly must be the assembly containing the ModelFactory classes!
+FactoryMap.DiscoverFactoriesInAssembly(Assembly.GetExecutingAssembly());
+```
+
+Factories can be manually mapped using:
+
+```csharp
+FactoryMap.Map<Comment, CommentFactory>();
+```
+
 ## Combining with Bogus/Faker
 
 If you want to use Bogus for generating data, you can create an extension for ModelFactory in your project:

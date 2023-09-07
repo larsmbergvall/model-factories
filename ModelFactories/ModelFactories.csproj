@@ -6,23 +6,23 @@
         <Nullable>enable</Nullable>
 
         <PackageId>ModelFactories</PackageId>
-        <Version>0.2.3</Version>
+        <Version>0.2.4</Version>
         <Authors>Larsmbergvall</Authors>
-        <AssemblyVersion>0.2.3</AssemblyVersion>
+        <AssemblyVersion>0.2.4</AssemblyVersion>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<RepositoryType>git</RepositoryType>
-		<RepositoryUrl>https://github.com/larsmbergvall/model-factories</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/larsmbergvall/model-factories</RepositoryUrl>
 
     </PropertyGroup>
 
     <ItemGroup>
         <None Include="../LICENSE" Pack="true" PackagePath=""/>
         <None Include="../README.md" Pack="true" PackagePath=""/>
-		  <None Update="ModelFactories.nuspec">
-			<Pack>true</Pack>
-			<PackagePath>$(OutputPath)</PackagePath>
-		</None>
+        <None Update="ModelFactories.nuspec">
+            <Pack>true</Pack>
+            <PackagePath>$(OutputPath)</PackagePath>
+        </None>
     </ItemGroup>
 </Project>
