@@ -42,4 +42,22 @@ public class FactoryMapTest
     {
         Assert.Throws<ModelFactoryException>(FactoryMap.FactoryFor<Comment>);
     }
+
+    [Fact]
+    public void ItDoesNotCrashIfAutoMappingAgain()
+    {
+        FactoryMap.DiscoverFactoriesInAssembly(Assembly.GetExecutingAssembly());
+        FactoryMap.DiscoverFactoriesInAssembly(Assembly.GetExecutingAssembly());
+
+        true.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ItDoesNotCrashIfManuallyMappingAgain()
+    {
+        FactoryMap.Map<Comment, CommentFactory>();
+        FactoryMap.Map<Comment, CommentFactory>();
+
+        true.Should().BeTrue();
+    }
 }
