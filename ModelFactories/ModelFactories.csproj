@@ -6,9 +6,9 @@
         <Nullable>enable</Nullable>
 
         <PackageId>ModelFactories</PackageId>
-        <Version>0.2.4</Version>
+        <Version>0.2.5</Version>
         <Authors>Larsmbergvall</Authors>
-        <AssemblyVersion>0.2.4</AssemblyVersion>
+        <AssemblyVersion>0.2.5</AssemblyVersion>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
