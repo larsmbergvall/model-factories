@@ -23,9 +23,10 @@ public static class FactoryMap
     public static void DiscoverFactoriesInAssembly(Assembly assembly)
     {
         var factoryTypes = assembly.GetTypes()
-            .Where(type => type.IsClass
-                           && type is { IsAbstract: false, BaseType.IsGenericType: true }
-                           && type.BaseType.GetGenericTypeDefinition() == typeof(ModelFactory<>)
+            .Where(
+                type => type.IsClass
+                        && type is { IsAbstract: false, BaseType.IsGenericType: true }
+                        && type.BaseType.GetGenericTypeDefinition() == typeof(ModelFactory<>)
             );
 
 
@@ -35,7 +36,7 @@ public static class FactoryMap
 
             if (genericArg != null)
             {
-                ModelToFactoryMap.Add(genericArg, factoryType);
+                ModelToFactoryMap.TryAdd(genericArg, factoryType);
             }
         }
     }
@@ -44,7 +45,7 @@ public static class FactoryMap
         where TModel : class, new()
         where TFactory : ModelFactory<TModel>
     {
-        ModelToFactoryMap.Add(typeof(TModel), typeof(TFactory));
+        ModelToFactoryMap.TryAdd(typeof(TModel), typeof(TFactory));
     }
 
     internal static void ClearCache()

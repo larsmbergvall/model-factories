@@ -1,3 +1,10 @@
+# 0.2.5
+
+## Bugs
+
+Fixed a crash that could occur when mapping (either automatically or manually) to add the same factory twice. For
+example, if you run the auto discovery before each unit test, it would crash.
+
 # 0.2.4
 
 ## Features
