@@ -1,3 +1,15 @@
+# 0.3.0
+
+## Features
+
+### WithMany:
+
+If your model has a List of related models (for example a Blog can have many Post objects), these can now be generated
+in the same way you can generate nested models with `With`.
+Example: `new BlogFactory().WithMany<Post, PostFactory>(b => b.Posts, 5)`
+
+See README.md for more info and examples
+
 # 0.2.5
 
 ## Bugs

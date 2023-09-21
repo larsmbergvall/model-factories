@@ -82,7 +82,8 @@ var post = new PostFactory()
 
 ### Related/Nested models and factories
 
-It is possible to use factories to generate related models for a model as well. For instance, a Post might have an Author.
+It is possible to use factories to generate related models for a model as well. For instance, a Post might have an
+Author.
 In this case you can tell the ModelFactory to use the Author factory when creating that resource:
 
 ```csharp
@@ -109,6 +110,39 @@ Of course, this can also be called on a specific factory instance:
     var post = new PostFactory()
         .With<Author, AuthorFactory>()
         .Create();
+```
+
+For List properties, use `WithMany`:
+
+```csharp
+// Create 5 random authors
+WithMany<Author, AuthorFactory>(p => p.Authors, 5);
+
+// Also create 5 random authors but mutating the factory. Callback must return a List of items
+WithMany<Author, AuthorFactory>(
+    p => p.Authors,
+    factory => factory.Property(a => a.Name, "John Doe").CreateMany(5)
+);
+
+// Create 5 random authors, but mutate the factory state. If using this approach, a new factory will be created for each item.
+// This means you can create things in sequence. 
+// In this example, each created Author will have a Score, where the first one has a score of 1 and the last one 5
+int score = 0;
+
+WithMany<Author, AuthorFactory>(
+    p => p.Authors,
+    5,
+    factory => factory.Property(
+        a => c.Score,
+        () =>
+        {
+            score++;
+
+            return score;
+        }
+    )
+);
+
 ```
 
 ### Hooks
@@ -193,6 +227,7 @@ FactoryMap.Map<Comment, CommentFactory>();
 ## Combining with Bogus/Faker
 
 If you want to use Bogus for generating data, you can create an extension for ModelFactory in your project:
+
 ```csharp
 public static class ModelFactoryExtensions
 {

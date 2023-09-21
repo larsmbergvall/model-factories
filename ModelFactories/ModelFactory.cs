@@ -52,7 +52,7 @@ public abstract class ModelFactory<T> where T : class, new()
     {
         var list = new List<T>();
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             list.Add(Create());
         }
@@ -112,7 +112,8 @@ public abstract class ModelFactory<T> where T : class, new()
     }
 
     public ModelFactory<T> With<TRelated, TFactory>(Expression<Func<T, TRelated?>> property,
-        Func<TFactory, TRelated> callback)
+        Func<TFactory, TRelated> callback
+    )
         where TRelated : class, new()
         where TFactory : ModelFactory<TRelated>, new()
     {
@@ -122,6 +123,58 @@ public abstract class ModelFactory<T> where T : class, new()
         _relatedFactories.Add(
             propertyName,
             new RelatedDefinition<TRelated, TFactory>(propertyName, callback)
+        );
+
+        return this;
+    }
+
+    public ModelFactory<T> WithMany<TRelated, TFactory>(Expression<Func<T, List<TRelated>>> property,
+        uint count
+    )
+        where TRelated : class, new()
+        where TFactory : ModelFactory<TRelated>, new()
+    {
+        var propertyName = PropertyName(property);
+        RemovePropertyKeysIfExists(propertyName);
+
+        _relatedFactories.Add(
+            propertyName,
+            new ManyRelatedDefinition<TRelated, TFactory>(propertyName, count)
+        );
+
+        return this;
+    }
+
+    public ModelFactory<T> WithMany<TRelated, TFactory>(Expression<Func<T, List<TRelated>>> property,
+        Func<TFactory, List<TRelated>> callback
+    )
+        where TRelated : class, new()
+        where TFactory : ModelFactory<TRelated>, new()
+    {
+        var propertyName = PropertyName(property);
+        RemovePropertyKeysIfExists(propertyName);
+
+        _relatedFactories.Add(
+            propertyName,
+            new ManyRelatedDefinition<TRelated, TFactory>(propertyName, callback)
+        );
+
+        return this;
+    }
+
+    public ModelFactory<T> WithMany<TRelated, TFactory>(Expression<Func<T, List<TRelated>>> property,
+        uint count,
+        Func<TFactory, ModelFactory<TRelated>> callback
+    )
+        where TRelated : class, new()
+        where TFactory : ModelFactory<TRelated>, new()
+    {
+        var propertyName = PropertyName(property);
+        RemovePropertyKeysIfExists(propertyName);
+
+        _relatedFactories.Add(
+            propertyName,
+            new ManyRelatedDefinition<TRelated, TFactory>(propertyName, count, callback)
         );
 
         return this;
