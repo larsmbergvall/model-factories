@@ -12,6 +12,7 @@ public abstract class ModelFactory<T> where T : class, new()
     private List<Func<T, T>> _afterCallbacks = new();
     private Dictionary<string, IPropertyDefinition> _definitions = new();
     private Dictionary<string, IPropertyDefinition> _definitionsWithModel = new();
+    private Dictionary<string, object> _recycledObjects = new();
     private Dictionary<string, IRelatedDefinition> _relatedFactories = new();
 
     public ModelFactory()
@@ -60,6 +61,22 @@ public abstract class ModelFactory<T> where T : class, new()
         return list;
     }
 
+    #region Recycling
+
+    public ModelFactory<T> Recycle<TModel>(TModel recycledModel)
+    {
+        if (recycledModel is null)
+        {
+            throw new ModelFactoryException("Cannot recycle null");
+        }
+
+        _recycledObjects.TryAdd(typeof(TModel).FullName!, recycledModel);
+
+        return this;
+    }
+
+    #endregion
+
     #region Hooks
 
     public ModelFactory<T> AfterCreate(Func<T, T> callback)
@@ -81,12 +98,29 @@ public abstract class ModelFactory<T> where T : class, new()
         return model;
     }
 
+    private bool WasRecycled(PropertyInfo prop, T model)
+    {
+        if (_recycledObjects.TryGetValue(prop.PropertyType.FullName!, out var recycled))
+        {
+            prop!.SetValue(model, recycled);
+            return true;
+        }
+
+        return false;
+    }
+
     private void ApplyProperty(T model, IPropertyDefinition propertyDefinition, bool withModel = false)
     {
         var reflection = model.GetType();
         var prop = reflection.GetProperty(propertyDefinition.PropertyName);
 
         EnsurePropExistsAndIsWritable(propertyDefinition, prop, reflection);
+
+        // Recycled values take priority over regular definitions
+        if (WasRecycled(prop!, model))
+        {
+            return;
+        }
 
         if (withModel)
         {
@@ -103,6 +137,12 @@ public abstract class ModelFactory<T> where T : class, new()
         var prop = reflection.GetProperty(relatedDefinition.PropertyName);
 
         EnsurePropExistsAndIsWritable(relatedDefinition, prop, reflection);
+
+        // Recycled values take priority over regular definitions
+        if (WasRecycled(prop!, model))
+        {
+            return;
+        }
 
         prop!.SetValue(
             model,
