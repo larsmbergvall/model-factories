@@ -61,22 +61,6 @@ public abstract class ModelFactory<T> where T : class, new()
         return list;
     }
 
-    #region Recycling
-
-    public ModelFactory<T> Recycle<TModel>(TModel recycledModel)
-    {
-        if (recycledModel is null)
-        {
-            throw new ModelFactoryException("Cannot recycle null");
-        }
-
-        _recycledObjects.TryAdd(typeof(TModel).FullName!, recycledModel);
-
-        return this;
-    }
-
-    #endregion
-
     #region Hooks
 
     public ModelFactory<T> AfterCreate(Func<T, T> callback)
@@ -203,6 +187,29 @@ public abstract class ModelFactory<T> where T : class, new()
         throw new ModelFactoryException("Could not extract name from expression");
     }
 
+    #region Recycling
+
+    public ModelFactory<T> Recycle<TModel>(TModel recycledModel)
+    {
+        if (recycledModel is null)
+        {
+            throw new ModelFactoryException("Cannot recycle null");
+        }
+
+        _recycledObjects.TryAdd(typeof(TModel).FullName!, recycledModel);
+
+        return this;
+    }
+
+    internal ModelFactory<T> SetRecycledObjects(Dictionary<string, object> recycledObjects)
+    {
+        _recycledObjects = recycledObjects;
+
+        return this;
+    }
+
+    #endregion
+
     #region Property
 
     public ModelFactory<T> Property<TProperty>(
@@ -254,7 +261,7 @@ public abstract class ModelFactory<T> where T : class, new()
 
         _relatedFactories.Add(
             propertyName,
-            new RelatedDefinition<TRelated, TFactory>(propertyName)
+            new RelatedDefinition<TRelated, TFactory>(propertyName, _recycledObjects)
         );
 
         return this;
@@ -271,7 +278,7 @@ public abstract class ModelFactory<T> where T : class, new()
 
         _relatedFactories.Add(
             propertyName,
-            new RelatedDefinition<TRelated, TFactory>(propertyName, callback)
+            new RelatedDefinition<TRelated, TFactory>(propertyName, _recycledObjects, callback)
         );
 
         return this;
@@ -288,7 +295,7 @@ public abstract class ModelFactory<T> where T : class, new()
 
         _relatedFactories.Add(
             propertyName,
-            new ManyRelatedDefinition<TRelated, TFactory>(propertyName, count)
+            new ManyRelatedDefinition<TRelated, TFactory>(propertyName, count, _recycledObjects)
         );
 
         return this;
@@ -305,7 +312,7 @@ public abstract class ModelFactory<T> where T : class, new()
 
         _relatedFactories.Add(
             propertyName,
-            new ManyRelatedDefinition<TRelated, TFactory>(propertyName, callback)
+            new ManyRelatedDefinition<TRelated, TFactory>(propertyName, _recycledObjects, callback)
         );
 
         return this;
@@ -323,7 +330,7 @@ public abstract class ModelFactory<T> where T : class, new()
 
         _relatedFactories.Add(
             propertyName,
-            new ManyRelatedDefinition<TRelated, TFactory>(propertyName, count, callback)
+            new ManyRelatedDefinition<TRelated, TFactory>(propertyName, count, _recycledObjects, callback)
         );
 
         return this;

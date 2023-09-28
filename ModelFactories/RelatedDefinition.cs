@@ -11,24 +11,33 @@ public class ManyRelatedDefinition<TModel, TFactory> : IRelatedDefinition
     where TModel : class, new()
     where TFactory : ModelFactory<TModel>, new()
 {
-    public ManyRelatedDefinition(string propertyName, uint count, Func<TFactory, ModelFactory<TModel>> callback)
+    public ManyRelatedDefinition(string propertyName, uint count, Dictionary<string, object> recycledObjects,
+        Func<TFactory, ModelFactory<TModel>> callback
+    )
     {
         PropertyName = propertyName;
         Count = count;
-        Callback = factory => callback(factory).CreateMany(count);
+        Callback = factory => callback((TFactory)factory.SetRecycledObjects(recycledObjects)).CreateMany(count);
     }
 
-    public ManyRelatedDefinition(string propertyName, Func<TFactory, List<TModel>> callback)
+    public ManyRelatedDefinition(string propertyName, Dictionary<string, object> recycledObjects,
+        Func<TFactory, List<TModel>> callback
+    )
     {
         PropertyName = propertyName;
-        Callback = callback;
+        Callback = factory =>
+        {
+            factory.SetRecycledObjects(recycledObjects);
+
+            return callback(factory);
+        };
     }
 
-    public ManyRelatedDefinition(string propertyName, uint count)
+    public ManyRelatedDefinition(string propertyName, uint count, Dictionary<string, object> recycledObjects)
     {
         PropertyName = propertyName;
         Count = count;
-        Callback = factory => factory.CreateMany(Count);
+        Callback = factory => factory.SetRecycledObjects(recycledObjects).CreateMany(Count);
     }
 
     private uint Count { get; set; }
@@ -46,11 +55,19 @@ public class ManyRelatedDefinition<TModel, TFactory> : IRelatedDefinition
 public class RelatedDefinition<TModel, TFactory> : IRelatedDefinition where TModel : class, new()
     where TFactory : ModelFactory<TModel>, new()
 {
-    public RelatedDefinition(string propertyName, Func<TFactory, TModel>? callback = null)
+    public RelatedDefinition(string propertyName, Dictionary<string, object> recycledObjects,
+        Func<TFactory, TModel>? callback = null
+    )
     {
         PropertyName = propertyName;
 
-        Callback = callback ?? (factory => factory.Create());
+        Callback = callback is not null
+            ? factory =>
+            {
+                factory.SetRecycledObjects(recycledObjects);
+                return callback(factory);
+            }
+            : factory => factory.SetRecycledObjects(recycledObjects).Create();
     }
 
 
