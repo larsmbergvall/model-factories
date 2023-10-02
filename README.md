@@ -224,6 +224,23 @@ Factories can be manually mapped using:
 FactoryMap.Map<Comment, CommentFactory>();
 ```
 
+### Reusing model when creating nested models (recycling)
+
+If you want to reuse a certain instance of a model when nested objects are being generated, you can use the `Recycle()`
+method:
+
+```csharp
+var someAuthor = new AuthorFactory().Create();
+var blog = new BlogFactory()
+    .WithMany<Post, PostFactory>(b => b.Posts, 10)
+    .Recycle(someAuthor)
+    .Create();
+```
+
+In this example, we create a `Blog` model which has 10 `Post` models. Each `Post` has an `Author`. When calling
+`Recycle(someAuthor)`, all 10 posts will use `someAuthor` whenever a factory (including all nested factories) would
+otherwise generate a new `Author` object.
+
 ## Combining with Bogus/Faker
 
 If you want to use Bogus for generating data, you can create an extension for ModelFactory in your project:
