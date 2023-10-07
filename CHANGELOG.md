@@ -1,3 +1,12 @@
+# 0.4.0
+
+## Features
+
+### Recycling models
+
+Added the `Recycle(object)` method, which makes ModelFactories use a given instance of a model instead of creating a new
+one. See readme for more details.
+
 # 0.3.0
 
 ## Features

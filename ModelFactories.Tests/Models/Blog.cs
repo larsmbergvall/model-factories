@@ -1,8 +1,8 @@
 namespace ModelFactories.Tests.Models;
 
-public class Author
+public class Blog
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public string Name { get; set; } = string.Empty;
-    public string NotWritable => "Nope";
+    public List<Post> Posts { get; set; } = new();
 }
