@@ -1,3 +1,7 @@
+# 1.0.1
+
+Target framework is now dotnet 6.0
+
 # 1.0.0
 
 No new features, mostly just making sure it works in dotnet 8 and bumping the version as it seems rather stable now
