@@ -17,7 +17,7 @@ public static class FactoryMap
             return (ModelFactory<T>)Activator.CreateInstance(factoryType)!;
         }
 
-        throw new ModelFactoryException($"There is no factory for type {modelType.Name}.");
+        throw new ModelFactoryNotFoundException(modelType.Name);
     }
 
     public static void DiscoverFactoriesInAssembly(Assembly assembly)

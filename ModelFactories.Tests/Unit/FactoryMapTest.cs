@@ -40,7 +40,7 @@ public class FactoryMapTest
     [Fact]
     public void ItThrowsExceptionForUnmappedFactory()
     {
-        Assert.Throws<ModelFactoryException>(FactoryMap.FactoryFor<Comment>);
+        Assert.Throws<ModelFactoryNotFoundException>(FactoryMap.FactoryFor<Comment>);
     }
 
     [Fact]

@@ -24,7 +24,8 @@ public class RelatedFactoriesTest
             .With<Author, AuthorFactory>(
                 p => p.Author,
                 f => f.Property(a => a.Name, () => "::author name::")
-                    .Create())
+                    .Create()
+            )
             .Create();
 
         post.Author.Should().NotBeNull();
@@ -39,18 +40,21 @@ public class RelatedFactoriesTest
             .With<Author, AuthorFactory>(
                 p => p.Author,
                 f => f.Property(a => a.Name, () => "::author name::")
-                    .Create())
+                    .Create()
+            )
             .CreateMany(2);
 
         posts.Should().BeOfType<List<Post>>();
         posts.Should().HaveCount(2);
 
-        posts.ForEach(post =>
-        {
-            post.Author.Should().NotBeNull();
-            post.Author.Should().BeOfType(typeof(Author));
-            post.Author!.Name.Should().Be("::author name::");
-        });
+        posts.ForEach(
+            post =>
+            {
+                post.Author.Should().NotBeNull();
+                post.Author.Should().BeOfType(typeof(Author));
+                post.Author!.Name.Should().Be("::author name::");
+            }
+        );
     }
 
     [Fact]
@@ -61,5 +65,15 @@ public class RelatedFactoriesTest
             .Create();
 
         post.Author.Should().BeNull();
+    }
+
+    [Fact]
+    public void ItCanUseSimpleWithSyntax()
+    {
+        var post = new PostFactory()
+            .With<Author>(p => p.Author)
+            .Create();
+
+        post.Author.Should().NotBeNull();
     }
 }
