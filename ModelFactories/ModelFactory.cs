@@ -267,6 +267,22 @@ public abstract class ModelFactory<T> where T : class, new()
         return this;
     }
 
+    public ModelFactory<T> With<TRelated>(Expression<Func<T, TRelated?>> property)
+        where TRelated : class, new()
+    {
+        var factory = FactoryMap.FactoryFor<TRelated>();
+        var propertyName = PropertyName(property);
+
+        RemovePropertyKeysIfExists(propertyName);
+
+        _relatedFactories.Add(
+            propertyName,
+            new RelatedDefinition<TRelated>(factory, propertyName, _recycledObjects)
+        );
+
+        return this;
+    }
+
     public ModelFactory<T> With<TRelated, TFactory>(Expression<Func<T, TRelated?>> property,
         Func<TFactory, TRelated> callback
     )

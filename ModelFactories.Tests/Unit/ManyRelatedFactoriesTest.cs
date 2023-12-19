@@ -85,4 +85,16 @@ public class ManyRelatedFactoriesTest
             post.Comments.ForEach(p => p.Text.Should().Be("comment"));
         }
     }
+
+    // [Fact]
+    // public void ItCanUseSimpleWithSyntaxWhenFactoriesAreMapped()
+    // {
+    //     FactoryMap.DiscoverFactoriesInAssembly(Assembly.GetExecutingAssembly());
+    //
+    //     var post = new PostWithManyCommentsFactory()
+    //         .WithMany<Comment>(p => p.Comments, 2)
+    //         .Create();
+    //
+    //     post.Comments.Should().HaveCount(2);
+    // }
 }

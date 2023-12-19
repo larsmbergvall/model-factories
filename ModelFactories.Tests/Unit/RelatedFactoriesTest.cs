@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Reflection;
+using FluentAssertions;
 using ModelFactories.Tests.Factories;
 using ModelFactories.Tests.Models;
 
@@ -68,10 +69,27 @@ public class RelatedFactoriesTest
     }
 
     [Fact]
-    public void ItCanUseSimpleWithSyntax()
+    public void ItCanUseSimpleWithSyntaxWhenFactoriesAreMapped()
     {
+        FactoryMap.DiscoverFactoriesInAssembly(Assembly.GetExecutingAssembly());
+
         var post = new PostFactory()
             .With<Author>(p => p.Author)
+            .Create();
+
+        post.Author.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ItCanUseSimpleWithSyntaxWithStateWhenFactoriesAreMapped()
+    {
+        FactoryMap.DiscoverFactoriesInAssembly(Assembly.GetExecutingAssembly());
+
+        var post = new PostFactory()
+            .With<Author>(
+                p => p.Author,
+                factory => factory.Property(a => a.Name, () => "::author name::").Create()
+            )
             .Create();
 
         post.Author.Should().NotBeNull();
