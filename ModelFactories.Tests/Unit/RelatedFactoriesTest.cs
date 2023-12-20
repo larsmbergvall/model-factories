@@ -1,12 +1,17 @@
-﻿using System.Reflection;
-using FluentAssertions;
+﻿using FluentAssertions;
 using ModelFactories.Tests.Factories;
 using ModelFactories.Tests.Models;
 
 namespace ModelFactories.Tests.Unit;
 
+[Collection("FactoryMapTests")]
 public class RelatedFactoriesTest
 {
+    public RelatedFactoriesTest()
+    {
+        FactoryMap.ClearCache();
+    }
+
     [Fact]
     public void ItCreatesRelatedModelsUsingFactory()
     {
@@ -71,7 +76,7 @@ public class RelatedFactoriesTest
     [Fact]
     public void ItCanUseSimpleWithSyntaxWhenFactoriesAreMapped()
     {
-        FactoryMap.DiscoverFactoriesInAssembly(Assembly.GetExecutingAssembly());
+        FactoryMap.DiscoverFactoriesInAssembly(GetType().Assembly);
 
         var post = new PostFactory()
             .With<Author>(p => p.Author)
@@ -81,9 +86,9 @@ public class RelatedFactoriesTest
     }
 
     [Fact]
-    public void ItCanUseSimpleWithSyntaxWithStateWhenFactoriesAreMapped()
+    public void ItCanUseSimpleWithSyntaxWithCallbackWhenFactoriesAreMapped()
     {
-        FactoryMap.DiscoverFactoriesInAssembly(Assembly.GetExecutingAssembly());
+        FactoryMap.DiscoverFactoriesInAssembly(GetType().Assembly);
 
         var post = new PostFactory()
             .With<Author>(
@@ -93,5 +98,6 @@ public class RelatedFactoriesTest
             .Create();
 
         post.Author.Should().NotBeNull();
+        post.Author!.Name.Should().Be("::author name::");
     }
 }

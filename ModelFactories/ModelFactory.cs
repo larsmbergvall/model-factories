@@ -7,7 +7,7 @@ using ModelFactories.Exceptions;
 
 namespace ModelFactories;
 
-public abstract class ModelFactory<T> where T : class, new()
+public abstract partial class ModelFactory<T> where T : class, new()
 {
     private List<Func<T, T>> _afterCallbacks = new();
     private Dictionary<string, IPropertyDefinition> _definitions = new();
@@ -244,110 +244,6 @@ public abstract class ModelFactory<T> where T : class, new()
         var propertyName = PropertyName(propertyExpression);
         RemovePropertyKeysIfExists(propertyName);
         _definitions.Add(propertyName, new PropertyDefinition<TProperty>(propertyName, () => value));
-
-        return this;
-    }
-
-    #endregion
-
-    #region Related Factories
-
-    public ModelFactory<T> With<TRelated, TFactory>(Expression<Func<T, TRelated?>> property)
-        where TRelated : class, new()
-        where TFactory : ModelFactory<TRelated>, new()
-    {
-        var propertyName = PropertyName(property);
-        RemovePropertyKeysIfExists(propertyName);
-
-        _relatedFactories.Add(
-            propertyName,
-            new RelatedDefinition<TRelated, TFactory>(propertyName, _recycledObjects)
-        );
-
-        return this;
-    }
-
-    public ModelFactory<T> With<TRelated>(Expression<Func<T, TRelated?>> property)
-        where TRelated : class, new()
-    {
-        var factory = FactoryMap.FactoryFor<TRelated>();
-        var propertyName = PropertyName(property);
-
-        RemovePropertyKeysIfExists(propertyName);
-
-        _relatedFactories.Add(
-            propertyName,
-            new RelatedDefinition<TRelated>(factory, propertyName, _recycledObjects)
-        );
-
-        return this;
-    }
-
-    public ModelFactory<T> With<TRelated, TFactory>(Expression<Func<T, TRelated?>> property,
-        Func<TFactory, TRelated> callback
-    )
-        where TRelated : class, new()
-        where TFactory : ModelFactory<TRelated>, new()
-    {
-        var propertyName = PropertyName(property);
-        RemovePropertyKeysIfExists(propertyName);
-
-        _relatedFactories.Add(
-            propertyName,
-            new RelatedDefinition<TRelated, TFactory>(propertyName, _recycledObjects, callback)
-        );
-
-        return this;
-    }
-
-    public ModelFactory<T> WithMany<TRelated, TFactory>(Expression<Func<T, List<TRelated>>> property,
-        uint count
-    )
-        where TRelated : class, new()
-        where TFactory : ModelFactory<TRelated>, new()
-    {
-        var propertyName = PropertyName(property);
-        RemovePropertyKeysIfExists(propertyName);
-
-        _relatedFactories.Add(
-            propertyName,
-            new ManyRelatedDefinition<TRelated, TFactory>(propertyName, count, _recycledObjects)
-        );
-
-        return this;
-    }
-
-    public ModelFactory<T> WithMany<TRelated, TFactory>(Expression<Func<T, List<TRelated>>> property,
-        Func<TFactory, List<TRelated>> callback
-    )
-        where TRelated : class, new()
-        where TFactory : ModelFactory<TRelated>, new()
-    {
-        var propertyName = PropertyName(property);
-        RemovePropertyKeysIfExists(propertyName);
-
-        _relatedFactories.Add(
-            propertyName,
-            new ManyRelatedDefinition<TRelated, TFactory>(propertyName, _recycledObjects, callback)
-        );
-
-        return this;
-    }
-
-    public ModelFactory<T> WithMany<TRelated, TFactory>(Expression<Func<T, List<TRelated>>> property,
-        uint count,
-        Func<TFactory, ModelFactory<TRelated>> callback
-    )
-        where TRelated : class, new()
-        where TFactory : ModelFactory<TRelated>, new()
-    {
-        var propertyName = PropertyName(property);
-        RemovePropertyKeysIfExists(propertyName);
-
-        _relatedFactories.Add(
-            propertyName,
-            new ManyRelatedDefinition<TRelated, TFactory>(propertyName, count, _recycledObjects, callback)
-        );
 
         return this;
     }
