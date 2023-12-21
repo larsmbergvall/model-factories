@@ -4,6 +4,13 @@ namespace ModelFactories;
 
 public abstract partial class ModelFactory<T> where T : class, new()
 {
+    /// <summary>
+    /// This method is used to specify that a property should be generated using a ModelFactory
+    /// </summary>
+    /// <param name="property"></param>
+    /// <typeparam name="TRelated">The related class</typeparam>
+    /// <typeparam name="TFactory">ModelFactory that will create related class</typeparam>
+    /// <returns></returns>
     public ModelFactory<T> With<TRelated, TFactory>(Expression<Func<T, TRelated?>> property)
         where TRelated : class, new()
         where TFactory : ModelFactory<TRelated>, new()
@@ -20,10 +27,11 @@ public abstract partial class ModelFactory<T> where T : class, new()
     }
 
     /// <summary>
-    /// Simple With method which does not have a factory callback
+    /// This method is used to specify that a property should be generated using a ModelFactory.
+    /// Note that to use this, factories must be registered or auto-discovered
     /// </summary>
     /// <param name="property"></param>
-    /// <typeparam name="TRelated"></typeparam>
+    /// <typeparam name="TRelated">The related class</typeparam>
     /// <returns></returns>
     public ModelFactory<T> With<TRelated>(Expression<Func<T, TRelated?>> property)
         where TRelated : class, new()
@@ -32,11 +40,13 @@ public abstract partial class ModelFactory<T> where T : class, new()
     }
 
     /// <summary>
-    /// Simple With method that takes a Factory callback
+    /// This method is used to specify that a property should be generated using a ModelFactory.
+    /// Note that to use this, factories must be registered or auto-discovered
     /// </summary>
     /// <param name="property"></param>
-    /// <param name="callback"></param>
-    /// <typeparam name="TRelated"></typeparam>
+    /// <param name="callback">A callback where you can modify the Factory. Note that it returns a ModelFactory for the
+    /// related class. You might need to cast it to access custom states.</param>
+    /// <typeparam name="TRelated">The related class</typeparam>
     /// <returns></returns>
     public ModelFactory<T> With<TRelated>(Expression<Func<T, TRelated?>> property,
         Func<ModelFactory<TRelated>, TRelated>? callback
@@ -55,6 +65,15 @@ public abstract partial class ModelFactory<T> where T : class, new()
         return this;
     }
 
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="property"></param>
+    /// <param name="callback">A callback where you can modify the Factory. Note that it returns a ModelFactory for the
+    /// related class. You might need to cast it to access custom states.</param>
+    /// <typeparam name="TRelated">The related class</typeparam>
+    /// <typeparam name="TFactory">ModelFactory that will create related class</typeparam>
+    /// <returns></returns>
     public ModelFactory<T> With<TRelated, TFactory>(Expression<Func<T, TRelated?>> property,
         Func<TFactory, TRelated> callback
     )
