@@ -3,7 +3,7 @@
 Very simple package for creating class based model factories. Inspired by
 Laravel [Model Factories](https://laravel.com/docs/eloquent-factories)
 
-This package is still in early development, so expect bugs and breaking changes :)
+The intended use is in tests and when you need to seed data for local development.
 
 **[Changelog](https://github.com/larsmbergvall/model-factories/blob/main/CHANGELOG.md)**
 
