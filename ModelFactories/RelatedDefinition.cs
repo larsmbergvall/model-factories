@@ -11,15 +11,6 @@ public class ManyRelatedDefinition<TModel, TFactory> : IRelatedDefinition
     where TModel : class, new()
     where TFactory : ModelFactory<TModel>, new()
 {
-    public ManyRelatedDefinition(string propertyName, uint count, Dictionary<string, object> recycledObjects,
-        Func<TFactory, ModelFactory<TModel>> callback
-    )
-    {
-        PropertyName = propertyName;
-        Count = count;
-        Callback = factory => callback((TFactory)factory.SetRecycledObjects(recycledObjects)).CreateMany(count);
-    }
-
     public ManyRelatedDefinition(string propertyName, Dictionary<string, object> recycledObjects,
         Func<TFactory, List<TModel>> callback
     )

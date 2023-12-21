@@ -15,12 +15,30 @@ public abstract partial class ModelFactory<T> where T : class, new()
         where TRelated : class, new()
         where TFactory : ModelFactory<TRelated>, new()
     {
+        return With<TRelated, TFactory>(property, null);
+    }
+
+    /// <summary>
+    /// This method is used to specify that a property should be generated using a ModelFactory.
+    /// </summary>
+    /// <param name="property"></param>
+    /// <param name="callback">A callback where you can modify the Factory. Note that it returns a ModelFactory for the
+    /// related class. You might need to cast it to access custom states.</param>
+    /// <typeparam name="TRelated">The related class</typeparam>
+    /// <typeparam name="TFactory">ModelFactory that will create related class</typeparam>
+    /// <returns></returns>
+    public ModelFactory<T> With<TRelated, TFactory>(Expression<Func<T, TRelated?>> property,
+        Func<TFactory, TRelated>? callback
+    )
+        where TRelated : class, new()
+        where TFactory : ModelFactory<TRelated>, new()
+    {
         var propertyName = PropertyName(property);
         RemovePropertyKeysIfExists(propertyName);
 
         _relatedFactories.Add(
             propertyName,
-            new RelatedDefinition<TRelated, TFactory>(propertyName, _recycledObjects)
+            new RelatedDefinition<TRelated, TFactory>(propertyName, _recycledObjects, callback)
         );
 
         return this;
@@ -36,7 +54,7 @@ public abstract partial class ModelFactory<T> where T : class, new()
     public ModelFactory<T> With<TRelated>(Expression<Func<T, TRelated?>> property)
         where TRelated : class, new()
     {
-        return With(property, null);
+        return With<TRelated>(property, null);
     }
 
     /// <summary>
@@ -66,32 +84,6 @@ public abstract partial class ModelFactory<T> where T : class, new()
     }
 
     /// <summary>
-    /// This method is used to specify that a property should be generated using a ModelFactory.
-    /// </summary>
-    /// <param name="property"></param>
-    /// <param name="callback">A callback where you can modify the Factory. Note that it returns a ModelFactory for the
-    /// related class. You might need to cast it to access custom states.</param>
-    /// <typeparam name="TRelated">The related class</typeparam>
-    /// <typeparam name="TFactory">ModelFactory that will create related class</typeparam>
-    /// <returns></returns>
-    public ModelFactory<T> With<TRelated, TFactory>(Expression<Func<T, TRelated?>> property,
-        Func<TFactory, TRelated> callback
-    )
-        where TRelated : class, new()
-        where TFactory : ModelFactory<TRelated>, new()
-    {
-        var propertyName = PropertyName(property);
-        RemovePropertyKeysIfExists(propertyName);
-
-        _relatedFactories.Add(
-            propertyName,
-            new RelatedDefinition<TRelated, TFactory>(propertyName, _recycledObjects, callback)
-        );
-
-        return this;
-    }
-
-    /// <summary>
     /// This method is used to specify that a collection property should be generated using a ModelFactory.
     /// </summary>
     /// <param name="property"></param>
@@ -105,15 +97,7 @@ public abstract partial class ModelFactory<T> where T : class, new()
         where TRelated : class, new()
         where TFactory : ModelFactory<TRelated>, new()
     {
-        var propertyName = PropertyName(property);
-        RemovePropertyKeysIfExists(propertyName);
-
-        _relatedFactories.Add(
-            propertyName,
-            new ManyRelatedDefinition<TRelated, TFactory>(propertyName, count, _recycledObjects)
-        );
-
-        return this;
+        return WithMany<TRelated, TFactory>(property, factory => factory.CreateMany(count));
     }
 
     /// <summary>
@@ -160,14 +144,13 @@ public abstract partial class ModelFactory<T> where T : class, new()
         where TRelated : class, new()
         where TFactory : ModelFactory<TRelated>, new()
     {
-        var propertyName = PropertyName(property);
-        RemovePropertyKeysIfExists(propertyName);
-
-        _relatedFactories.Add(
-            propertyName,
-            new ManyRelatedDefinition<TRelated, TFactory>(propertyName, count, _recycledObjects, callback)
+        return WithMany<TRelated, TFactory>(
+            property,
+            factory =>
+            {
+                var callbackFactory = callback(factory);
+                return callbackFactory.CreateMany(count);
+            }
         );
-
-        return this;
     }
 }
