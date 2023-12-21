@@ -66,7 +66,7 @@ public abstract partial class ModelFactory<T> where T : class, new()
     }
 
     /// <summary>
-    ///
+    /// This method is used to specify that a property should be generated using a ModelFactory.
     /// </summary>
     /// <param name="property"></param>
     /// <param name="callback">A callback where you can modify the Factory. Note that it returns a ModelFactory for the
@@ -91,6 +91,14 @@ public abstract partial class ModelFactory<T> where T : class, new()
         return this;
     }
 
+    /// <summary>
+    /// This method is used to specify that a collection property should be generated using a ModelFactory.
+    /// </summary>
+    /// <param name="property"></param>
+    /// <param name="count">Number of items to generate</param>
+    /// <typeparam name="TRelated">The related class</typeparam>
+    /// <typeparam name="TFactory">Factory to create items of the related class</typeparam>
+    /// <returns></returns>
     public ModelFactory<T> WithMany<TRelated, TFactory>(Expression<Func<T, List<TRelated>>> property,
         uint count
     )
@@ -108,6 +116,16 @@ public abstract partial class ModelFactory<T> where T : class, new()
         return this;
     }
 
+    /// <summary>
+    /// This method is used to specify that a collection property should be generated using a ModelFactory.
+    /// </summary>
+    /// <param name="property"></param>
+    /// <param name="callback">A callback where you can modify the Factory. Note that it returns a ModelFactory for the
+    /// related class. You might need to cast it to access custom states. Also note that this should return a collection,
+    /// so end it with CreateMany()</param>
+    /// <typeparam name="TRelated">The related class</typeparam>
+    /// <typeparam name="TFactory">Factory to create items of the related class</typeparam>
+    /// <returns></returns>
     public ModelFactory<T> WithMany<TRelated, TFactory>(Expression<Func<T, List<TRelated>>> property,
         Func<TFactory, List<TRelated>> callback
     )
@@ -125,6 +143,16 @@ public abstract partial class ModelFactory<T> where T : class, new()
         return this;
     }
 
+    /// <summary>
+    /// This method is used to specify that a collection property should be generated using a ModelFactory.
+    /// </summary>
+    /// <param name="property"></param>
+    /// <param name="count">Number of items to generate</param>
+    /// <param name="callback">A callback where you can modify the Factory. Note that it returns a ModelFactory for the
+    /// related class. You might need to cast it to access custom states. Note that this should return the factory itself</param>
+    /// <typeparam name="TRelated">The related class</typeparam>
+    /// <typeparam name="TFactory">Factory to create items of the related class</typeparam>
+    /// <returns></returns>
     public ModelFactory<T> WithMany<TRelated, TFactory>(Expression<Func<T, List<TRelated>>> property,
         uint count,
         Func<TFactory, ModelFactory<TRelated>> callback
