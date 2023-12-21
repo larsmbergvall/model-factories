@@ -1,4 +1,6 @@
 using System.Linq.Expressions;
+using System.Reflection;
+using ModelFactories.Exceptions;
 
 namespace ModelFactories;
 
@@ -172,4 +174,46 @@ public abstract partial class ModelFactory<T> where T : class, new()
             relatedDefinition.Callback.DynamicInvoke(relatedDefinition.CreateFactory.DynamicInvoke())
         );
     }
+
+    #region Recycling
+
+    /// <summary>
+    /// Allows you to recycle a specific model. This means that whenever a model (even nested ones) would be generated,
+    /// the model you supply here would be used instead of generating a random one.
+    /// </summary>
+    /// <param name="recycledModel"></param>
+    /// <typeparam name="TModel"></typeparam>
+    /// <returns></returns>
+    /// <exception cref="ModelFactoryException"></exception>
+    public ModelFactory<T> Recycle<TModel>(TModel recycledModel)
+    {
+        if (recycledModel is null)
+        {
+            throw new ModelFactoryException("Cannot recycle null");
+        }
+
+        _recycledObjects.TryAdd(typeof(TModel).FullName!, recycledModel);
+
+        return this;
+    }
+
+    internal ModelFactory<T> SetRecycledObjects(Dictionary<string, object> recycledObjects)
+    {
+        _recycledObjects = recycledObjects;
+
+        return this;
+    }
+
+    private bool WasRecycled(PropertyInfo prop, T model)
+    {
+        if (_recycledObjects.TryGetValue(prop.PropertyType.FullName!, out var recycled))
+        {
+            prop!.SetValue(model, recycled);
+            return true;
+        }
+
+        return false;
+    }
+
+    #endregion
 }
