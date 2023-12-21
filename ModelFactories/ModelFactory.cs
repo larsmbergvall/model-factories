@@ -1,9 +1,6 @@
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using ModelFactories.Exceptions;
-
-[assembly: InternalsVisibleTo("ModelFactories.Tests")]
 
 namespace ModelFactories;
 
@@ -61,27 +58,6 @@ public abstract partial class ModelFactory<T> where T : class, new()
         return list;
     }
 
-    #region Hooks
-
-    public ModelFactory<T> AfterCreate(Func<T, T> callback)
-    {
-        _afterCallbacks.Add(callback);
-
-        return this;
-    }
-
-    #endregion
-
-    private T ExecuteAfterCallbacks(T model)
-    {
-        foreach (var callback in _afterCallbacks)
-        {
-            model = callback(model);
-        }
-
-        return model;
-    }
-
     private bool WasRecycled(PropertyInfo prop, T model)
     {
         if (_recycledObjects.TryGetValue(prop.PropertyType.FullName!, out var recycled))
@@ -113,25 +89,6 @@ public abstract partial class ModelFactory<T> where T : class, new()
         }
 
         prop!.SetValue(model, propertyDefinition.Callback.DynamicInvoke());
-    }
-
-    private void CreateRelated(T model, IRelatedDefinition relatedDefinition)
-    {
-        var reflection = model.GetType();
-        var prop = reflection.GetProperty(relatedDefinition.PropertyName);
-
-        EnsurePropExistsAndIsWritable(relatedDefinition, prop, reflection);
-
-        // Recycled values take priority over regular definitions
-        if (WasRecycled(prop!, model))
-        {
-            return;
-        }
-
-        prop!.SetValue(
-            model,
-            relatedDefinition.Callback.DynamicInvoke(relatedDefinition.CreateFactory.DynamicInvoke())
-        );
     }
 
     private void Configure()

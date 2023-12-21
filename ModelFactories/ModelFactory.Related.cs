@@ -153,4 +153,23 @@ public abstract partial class ModelFactory<T> where T : class, new()
             }
         );
     }
+
+    private void CreateRelated(T model, IRelatedDefinition relatedDefinition)
+    {
+        var reflection = model.GetType();
+        var prop = reflection.GetProperty(relatedDefinition.PropertyName);
+
+        EnsurePropExistsAndIsWritable(relatedDefinition, prop, reflection);
+
+        // Recycled values take priority over regular definitions
+        if (WasRecycled(prop!, model))
+        {
+            return;
+        }
+
+        prop!.SetValue(
+            model,
+            relatedDefinition.Callback.DynamicInvoke(relatedDefinition.CreateFactory.DynamicInvoke())
+        );
+    }
 }
