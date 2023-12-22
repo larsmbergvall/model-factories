@@ -4,9 +4,6 @@ Simplified the API for creating related models, assuming you are using Factory D
 already. If you have, you can now call `new PostFactory().With<Post>(p => p.Post)`. In other words, you no longer need
 to supply a generic argument for the factory type.
 
-The README is not updated to reflect this yet; I'm planning to move the documentation somewhere else, where it might be
-more accessible.
-
 # 1.0.1
 
 Target framework is now dotnet 6.0
