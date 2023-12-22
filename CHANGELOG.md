@@ -1,5 +1,9 @@
 # 1.1.0
 
+## Features
+
+### Simpler With-syntax
+
 Simplified the API for creating related models, assuming you are using Factory Discovery or have mapped your factories
 already. If you have, you can now call `new PostFactory().With<Post>(p => p.Post)`. In other words, you no longer need
 to supply a generic argument for the factory type.
