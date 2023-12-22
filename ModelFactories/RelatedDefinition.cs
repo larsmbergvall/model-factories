@@ -7,19 +7,37 @@ public interface IRelatedDefinition
     Delegate CreateFactory { get; }
 }
 
+public class ManyRelatedDefinition<TModel> : IRelatedDefinition where TModel : class, new()
+{
+    private ModelFactory<TModel> _factory;
+
+    public ManyRelatedDefinition(ModelFactory<TModel> modelFactory,
+        string propertyName, Dictionary<string, object> recycledObjects,
+        uint? count = null,
+        Func<ModelFactory<TModel>, List<TModel>>? callback = null
+    )
+    {
+        _factory = modelFactory;
+        PropertyName = propertyName;
+        Callback = callback is not null
+            ? factory =>
+            {
+                factory.SetRecycledObjects(recycledObjects);
+                return callback(factory);
+            }
+            : factory => factory.SetRecycledObjects(recycledObjects).CreateMany(count ?? 1);
+    }
+
+    private Func<ModelFactory<TModel>, List<TModel>> Callback { get; set; }
+    public string PropertyName { get; }
+    Delegate IRelatedDefinition.Callback => Callback;
+    Delegate IRelatedDefinition.CreateFactory => () => _factory;
+}
+
 public class ManyRelatedDefinition<TModel, TFactory> : IRelatedDefinition
     where TModel : class, new()
     where TFactory : ModelFactory<TModel>, new()
 {
-    public ManyRelatedDefinition(string propertyName, uint count, Dictionary<string, object> recycledObjects,
-        Func<TFactory, ModelFactory<TModel>> callback
-    )
-    {
-        PropertyName = propertyName;
-        Count = count;
-        Callback = factory => callback((TFactory)factory.SetRecycledObjects(recycledObjects)).CreateMany(count);
-    }
-
     public ManyRelatedDefinition(string propertyName, Dictionary<string, object> recycledObjects,
         Func<TFactory, List<TModel>> callback
     )
@@ -52,6 +70,44 @@ public class ManyRelatedDefinition<TModel, TFactory> : IRelatedDefinition
     }
 }
 
+/// <summary>
+/// Simpler RelatedDefinition which does not use a generic factory type, but gets it's factory from the constructor
+/// </summary>
+/// <typeparam name="TModel"></typeparam>
+public class RelatedDefinition<TModel> : IRelatedDefinition where TModel : class, new()
+{
+    private ModelFactory<TModel> _factory;
+
+    public RelatedDefinition(
+        ModelFactory<TModel> modelFactory, string propertyName,
+        Dictionary<string, object> recycledObjects,
+        Func<ModelFactory<TModel>, TModel>? callback = null
+    )
+    {
+        _factory = modelFactory;
+        PropertyName = propertyName;
+
+        Callback = callback is not null
+            ? factory =>
+            {
+                factory.SetRecycledObjects(recycledObjects);
+                return callback(factory);
+            }
+            : factory => factory.SetRecycledObjects(recycledObjects).Create();
+    }
+
+    private Func<ModelFactory<TModel>, TModel> Callback { get; set; }
+    public string PropertyName { get; private set; }
+
+    Delegate IRelatedDefinition.Callback => Callback;
+    Delegate IRelatedDefinition.CreateFactory => () => _factory;
+}
+
+/// <summary>
+/// RelatedDefinition which uses a generic factory type, used for the older syntax - or when not using factory discovery
+/// </summary>
+/// <typeparam name="TModel"></typeparam>
+/// <typeparam name="TFactory"></typeparam>
 public class RelatedDefinition<TModel, TFactory> : IRelatedDefinition where TModel : class, new()
     where TFactory : ModelFactory<TModel>, new()
 {

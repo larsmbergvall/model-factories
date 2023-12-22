@@ -1,4 +1,3 @@
-using System.Reflection;
 using FluentAssertions;
 using ModelFactories.Exceptions;
 using ModelFactories.Tests.Factories;
@@ -6,6 +5,7 @@ using ModelFactories.Tests.Models;
 
 namespace ModelFactories.Tests.Unit;
 
+[Collection("FactoryMapTests")]
 public class FactoryMapTest
 {
     public FactoryMapTest()
@@ -16,7 +16,7 @@ public class FactoryMapTest
     [Fact]
     public void ItDiscoversFactoriesForModels()
     {
-        FactoryMap.DiscoverFactoriesInAssembly(Assembly.GetExecutingAssembly());
+        FactoryMap.DiscoverFactoriesInAssembly(GetType().Assembly);
 
         var authorFactory = FactoryMap.FactoryFor<Author>();
         authorFactory.Should().NotBeNull();
@@ -40,14 +40,14 @@ public class FactoryMapTest
     [Fact]
     public void ItThrowsExceptionForUnmappedFactory()
     {
-        Assert.Throws<ModelFactoryException>(FactoryMap.FactoryFor<Comment>);
+        Assert.Throws<ModelFactoryNotFoundException>(FactoryMap.FactoryFor<Comment>);
     }
 
     [Fact]
     public void ItDoesNotCrashIfAutoMappingAgain()
     {
-        FactoryMap.DiscoverFactoriesInAssembly(Assembly.GetExecutingAssembly());
-        FactoryMap.DiscoverFactoriesInAssembly(Assembly.GetExecutingAssembly());
+        FactoryMap.DiscoverFactoriesInAssembly(GetType().Assembly);
+        FactoryMap.DiscoverFactoriesInAssembly(GetType().Assembly);
 
         true.Should().BeTrue();
     }

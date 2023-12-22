@@ -4,8 +4,14 @@ using ModelFactories.Tests.Models;
 
 namespace ModelFactories.Tests.Unit;
 
+[Collection("FactoryMapTests")]
 public class RelatedFactoriesTest
 {
+    public RelatedFactoriesTest()
+    {
+        FactoryMap.ClearCache();
+    }
+
     [Fact]
     public void ItCreatesRelatedModelsUsingFactory()
     {
@@ -24,7 +30,8 @@ public class RelatedFactoriesTest
             .With<Author, AuthorFactory>(
                 p => p.Author,
                 f => f.Property(a => a.Name, () => "::author name::")
-                    .Create())
+                    .Create()
+            )
             .Create();
 
         post.Author.Should().NotBeNull();
@@ -39,18 +46,21 @@ public class RelatedFactoriesTest
             .With<Author, AuthorFactory>(
                 p => p.Author,
                 f => f.Property(a => a.Name, () => "::author name::")
-                    .Create())
+                    .Create()
+            )
             .CreateMany(2);
 
         posts.Should().BeOfType<List<Post>>();
         posts.Should().HaveCount(2);
 
-        posts.ForEach(post =>
-        {
-            post.Author.Should().NotBeNull();
-            post.Author.Should().BeOfType(typeof(Author));
-            post.Author!.Name.Should().Be("::author name::");
-        });
+        posts.ForEach(
+            post =>
+            {
+                post.Author.Should().NotBeNull();
+                post.Author.Should().BeOfType(typeof(Author));
+                post.Author!.Name.Should().Be("::author name::");
+            }
+        );
     }
 
     [Fact]
@@ -61,5 +71,33 @@ public class RelatedFactoriesTest
             .Create();
 
         post.Author.Should().BeNull();
+    }
+
+    [Fact]
+    public void ItCanUseSimpleWithSyntaxWhenFactoriesAreMapped()
+    {
+        FactoryMap.DiscoverFactoriesInAssembly(GetType().Assembly);
+
+        var post = new PostFactory()
+            .With<Author>(p => p.Author)
+            .Create();
+
+        post.Author.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ItCanUseSimpleWithSyntaxWithCallbackWhenFactoriesAreMapped()
+    {
+        FactoryMap.DiscoverFactoriesInAssembly(GetType().Assembly);
+
+        var post = new PostFactory()
+            .With<Author>(
+                p => p.Author,
+                factory => factory.Property(a => a.Name, () => "::author name::").Create()
+            )
+            .Create();
+
+        post.Author.Should().NotBeNull();
+        post.Author!.Name.Should().Be("::author name::");
     }
 }

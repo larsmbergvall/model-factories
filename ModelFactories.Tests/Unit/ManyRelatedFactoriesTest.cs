@@ -85,4 +85,42 @@ public class ManyRelatedFactoriesTest
             post.Comments.ForEach(p => p.Text.Should().Be("comment"));
         }
     }
+
+    [Fact]
+    public void ItCanUseSimpleWithManySyntaxWhenFactoriesAreMapped()
+    {
+        FactoryMap.DiscoverFactoriesInAssembly(GetType().Assembly);
+
+        var post = new PostWithManyCommentsFactory()
+            .WithMany<Comment>(p => p.Comments, 2)
+            .Create();
+
+        post.Comments.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void ItCanUseSimpleWithManySyntaxWhenFactoriesAreMappedWithCallback()
+    {
+        FactoryMap.DiscoverFactoriesInAssembly(GetType().Assembly);
+
+        var post = new PostWithManyCommentsFactory()
+            .WithMany<Comment>(p => p.Comments, factory => factory.Property(x => x.Text, "Foo").CreateMany(2))
+            .Create();
+
+        post.Comments.Should().HaveCount(2);
+        post.Comments.ForEach(p => p.Text.Should().Be("Foo"));
+    }
+
+    [Fact]
+    public void ItCanUseSimpleWithManySyntaxWhenFactoriesAreMappedWithFactoryCallback()
+    {
+        FactoryMap.DiscoverFactoriesInAssembly(GetType().Assembly);
+
+        var post = new PostWithManyCommentsFactory()
+            .WithMany<Comment>(p => p.Comments, 2, factory => factory.Property(x => x.Text, "Bar"))
+            .Create();
+
+        post.Comments.Should().HaveCount(2);
+        post.Comments.ForEach(p => p.Text.Should().Be("Bar"));
+    }
 }
