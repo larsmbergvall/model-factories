@@ -7,6 +7,33 @@ public interface IRelatedDefinition
     Delegate CreateFactory { get; }
 }
 
+public class ManyRelatedDefinition<TModel> : IRelatedDefinition where TModel : class, new()
+{
+    private ModelFactory<TModel> _factory;
+
+    public ManyRelatedDefinition(ModelFactory<TModel> modelFactory,
+        string propertyName, Dictionary<string, object> recycledObjects,
+        uint? count = null,
+        Func<ModelFactory<TModel>, List<TModel>>? callback = null
+    )
+    {
+        _factory = modelFactory;
+        PropertyName = propertyName;
+        Callback = callback is not null
+            ? factory =>
+            {
+                factory.SetRecycledObjects(recycledObjects);
+                return callback(factory);
+            }
+            : factory => factory.SetRecycledObjects(recycledObjects).CreateMany(count ?? 1);
+    }
+
+    private Func<ModelFactory<TModel>, List<TModel>> Callback { get; set; }
+    public string PropertyName { get; }
+    Delegate IRelatedDefinition.Callback => Callback;
+    Delegate IRelatedDefinition.CreateFactory => () => _factory;
+}
+
 public class ManyRelatedDefinition<TModel, TFactory> : IRelatedDefinition
     where TModel : class, new()
     where TFactory : ModelFactory<TModel>, new()

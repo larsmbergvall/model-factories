@@ -106,6 +106,21 @@ public abstract partial class ModelFactory<T> where T : class, new()
     /// This method is used to specify that a collection property should be generated using a ModelFactory.
     /// </summary>
     /// <param name="property"></param>
+    /// <param name="count">Number of items to generate</param>
+    /// <typeparam name="TRelated">The related class</typeparam>
+    /// <returns></returns>
+    public ModelFactory<T> WithMany<TRelated>(Expression<Func<T, List<TRelated>>> property,
+        uint count
+    )
+        where TRelated : class, new()
+    {
+        return WithMany<TRelated>(property, factory => factory.CreateMany(count));
+    }
+
+    /// <summary>
+    /// This method is used to specify that a collection property should be generated using a ModelFactory.
+    /// </summary>
+    /// <param name="property"></param>
     /// <param name="callback">A callback where you can modify the Factory. Note that it returns a ModelFactory for the
     /// related class. You might need to cast it to access custom states. Also note that this should return a collection,
     /// so end it with CreateMany()</param>
@@ -127,6 +142,41 @@ public abstract partial class ModelFactory<T> where T : class, new()
         );
 
         return this;
+    }
+
+    /// <summary>
+    /// This method is used to specify that a collection property should be generated using a ModelFactory.
+    /// </summary>
+    /// <param name="property"></param>
+    /// <param name="callback">A callback where you can modify the Factory. Note that it returns a ModelFactory for the
+    /// related class. You might need to cast it to access custom states. Also note that this should return a collection,
+    /// so end it with CreateMany()</param>
+    /// <typeparam name="TRelated">The related class</typeparam>
+    /// <returns></returns>
+    public ModelFactory<T> WithMany<TRelated>(Expression<Func<T, List<TRelated>>> property,
+        Func<ModelFactory<TRelated>, List<TRelated>> callback
+    )
+        where TRelated : class, new()
+    {
+        var factory = FactoryMap.FactoryFor<TRelated>();
+        var propertyName = PropertyName(property);
+        RemovePropertyKeysIfExists(propertyName);
+
+        _relatedFactories.Add(
+            propertyName,
+            new ManyRelatedDefinition<TRelated>(factory, propertyName, _recycledObjects, null, callback)
+        );
+
+        return this;
+    }
+
+    public ModelFactory<T> WithMany<TRelated>(Expression<Func<T, List<TRelated>>> property,
+        uint count,
+        Func<ModelFactory<TRelated>, ModelFactory<TRelated>> callback
+    )
+        where TRelated : class, new()
+    {
+        return WithMany<TRelated>(property, factory => callback(factory).CreateMany(count));
     }
 
     /// <summary>
