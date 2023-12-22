@@ -142,8 +142,10 @@ WithMany<Author, AuthorFactory>(
         }
     )
 );
-
 ```
+
+There is also a simpler syntax for creating related/nested models, which is described in the section
+[Factory Discovery](#factory-discovery). You need to use Factory Discovery/mapping to use it.
 
 ### Hooks
 
