@@ -164,7 +164,8 @@ Of course, this can also be done inside your ModelFactory `Definition()` method.
 
 ### Factory Discovery
 
-Factory Discovery is a **completely optional feature**, which allows you to get a factory for a generic type, like this:
+Factory Discovery is an **optional (but recommended) feature**, which allows you to get a factory for a generic type,
+like this:
 
 ```csharp
 var postFactory = FactoryMap.FactoryFor<Post>();
@@ -205,6 +206,21 @@ that you don't have access to any custom states or methods defined in your facto
 
 ```csharp
 var postFactory = (PostFactory) Post.Factory();
+```
+
+#### Simpler With() calls
+
+If you are using factory discovery, regardless of if you are mapping them automatically or manually, you can use
+a simpler With-syntax when creating related/nested models:
+
+```csharp
+var post = new PostFactory()
+    .With<Author>(p => p.Author)
+    // or .With<Author>(p => p.Author, factory => factory.Property(a => a.Name, "John Doe").Create())
+    .WithMany<Comment>(p => p.Comments, 10)
+    // or .WithMany<Comment>(p => p.Comments, 10, factory => factory.Property(c => c.Title, "Foo"))
+    // or .WithMany<Comment>(p => p.Comments, factory => factory.Property(c => c.Title, "Foo").CreateMany(10))
+    .Create();
 ```
 
 #### How are factories discovered?
