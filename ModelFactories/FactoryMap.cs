@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using ModelFactories.Exceptions;
 
@@ -5,7 +6,7 @@ namespace ModelFactories;
 
 public static class FactoryMap
 {
-    internal static Dictionary<Type, Type> ModelToFactoryMap = new();
+    internal static ConcurrentDictionary<Type, Type> ModelToFactoryMap = new();
 
     public static ModelFactory<T> FactoryFor<T>()
         where T : class, new()
@@ -50,6 +51,6 @@ public static class FactoryMap
 
     internal static void ClearCache()
     {
-        ModelToFactoryMap = new Dictionary<Type, Type>();
+        ModelToFactoryMap = new ConcurrentDictionary<Type, Type>();
     }
 }
