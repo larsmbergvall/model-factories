@@ -1,3 +1,9 @@
+# 1.1.1
+
+## Bugfixes
+
+* The internal Factory map now uses a concurrent dictionary to avoid issues when running in certain applications
+
 # 1.1.0
 
 ## Features
